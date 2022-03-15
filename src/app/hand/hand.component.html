@@ -1,0 +1,5 @@
+<ng-container *ngFor="let card of hand.cards">
+  <app-hand-card-actions [card]="card" *ngIf="card === selectedCard"></app-hand-card-actions>
+  <app-card (click)="selectCard(card)" [card]="card" [ngClass]="{'selected': card === selectedCard}"
+            class="app-card width-12em height-18em padding-05em"></app-card>
+</ng-container>

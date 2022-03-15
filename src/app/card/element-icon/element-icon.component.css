@@ -1,0 +1,11 @@
+.element-image {
+  width: 2em;
+  height: 2em;
+  color: #414040;
+  background: url("../../../assets/images/backgrounds/wood.jpg");
+  border: solid 0.1em #414040;
+  border-radius: 10em;
+  align-items: center;
+  justify-content: center;
+  display: flex;
+}

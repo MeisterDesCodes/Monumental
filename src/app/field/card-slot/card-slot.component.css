@@ -1,0 +1,13 @@
+.game-card-slot {
+  height: 100%;
+  box-shadow: 5px 5px 12px #000;
+}
+
+.usable {
+  box-shadow: inset 0 0 25px green;
+}
+
+.slot-border {
+  border: solid #000 0.5em;
+  border-image: url("../../../assets/images/backgrounds/wood.jpg") 30 30 round;
+}

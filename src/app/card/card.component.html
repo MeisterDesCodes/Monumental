@@ -1,0 +1,33 @@
+<div aTilt class="game-card">
+  <div class="height-10per border-bottom-image-03em bold align-items justify-content flex">
+    <span class="flex padding-05em color-white">
+      {{card.name}}
+    </span>
+  </div>
+  <div class="flex height-35per border-bottom-image-03em">
+    <div class="width-20per">
+      <ng-container *ngFor="let element of card.elementCosts">
+        <app-element-icon [element]="element" class="inline-block width-100per height-205em"></app-element-icon>
+      </ng-container>
+    </div>
+    <div class="width-80per border-left-image-03em">
+      <img class="width-100per height-100per" src="../../assets/images/cards/{{card.imagePath}}.jpg" alt="image">
+    </div>
+  </div>
+  <div class="height-10per border-bottom-image-03em bold align-items justify-content flex">
+    <span class="flex padding-05em color-white">
+      {{card.type}} / {{card.archetype}}
+    </span>
+  </div>
+  <div class="height-45per">
+    <span class="flex padding-05em color-white">
+      {{card.description}}
+    </span>
+  </div>
+  <div>
+    Attack
+  </div>
+  <div>
+    Defense
+  </div>
+</div>

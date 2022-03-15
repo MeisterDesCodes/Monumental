@@ -1,0 +1,10 @@
+<app-admin-panel></app-admin-panel>
+<app-phases class="absolute top-5em"></app-phases>
+<app-field></app-field>
+<ng-container *ngFor="let player of players">
+  <ng-container *ngIf="player === getCurrentPlayer()">
+    <app-elements [elements]="player.elementals" class="absolute top-0"></app-elements>
+    <app-hand [hand]="player.hand"
+              class="flex justify-content fixed width-100per height-14em top-25em"></app-hand>
+  </ng-container>
+</ng-container>

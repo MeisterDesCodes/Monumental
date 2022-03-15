@@ -1,0 +1,11 @@
+.app-card {
+  transition: 200ms ease-in-out;
+}
+
+.app-card:not(.selected):hover {
+  transform: scale(1.2);
+}
+
+.selected {
+  transform: scale(1.2);
+}

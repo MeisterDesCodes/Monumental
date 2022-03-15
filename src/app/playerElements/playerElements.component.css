@@ -1,0 +1,10 @@
+.game-elements {
+  width: 25em;
+  height: 4em;
+  border-bottom: solid 0.5em black;
+  border-right: solid 0.5em black;
+  border-image: url("../../assets/images/backgrounds/wood.jpg") 30 30 round;
+  background: url("../../assets/images/backgrounds/card-background.jpg");
+  align-items: center;
+  display: flex;
+}

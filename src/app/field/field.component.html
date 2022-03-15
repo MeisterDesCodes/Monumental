@@ -1,0 +1,10 @@
+<div class="width-100per align-items flex-column">
+  <div class="flex height-12em">
+    <app-card-slot [rowType]="rowTypes[0]" *ngFor="let temp of [].constructor(rowSize)"
+                   class="width-6em height-9em padding-05em"></app-card-slot>
+  </div>
+  <div class="flex height-12em">
+    <app-card-slot [rowType]="rowTypes[1]" *ngFor="let temp of [].constructor(rowSize)"
+                   class="width-6em height-9em padding-05em"></app-card-slot>
+  </div>
+</div>

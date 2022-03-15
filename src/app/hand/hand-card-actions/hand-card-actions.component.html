@@ -1,0 +1,7 @@
+<div class="absolute top-neg5em width-14em height-3em align-items justify-content flex">
+  <div class="width-35per height-100per padding-05em" *ngFor="let action of getPerformableActions()">
+    <button (click)="performAction(card, action)" class="card-action-button">
+      <span>{{action}}</span>
+    </button>
+  </div>
+</div>

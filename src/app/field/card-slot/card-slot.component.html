@@ -1,0 +1,4 @@
+<div class="game-card-slot" (click)="isUsable() && performAction()"
+     [ngClass]="{'usable': isUsable(), 'slot-border': !card}">
+  <app-card class="font-size-05em" *ngIf="card" [card]="card"></app-card>
+</div>

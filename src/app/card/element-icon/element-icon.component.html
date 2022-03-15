@@ -1,0 +1,16 @@
+<div class="align-items justify-content flex">
+  <ng-container [ngSwitch]="element.type">
+    <div class="element-image">
+      <i *ngSwitchCase="elementals[0]" class="fa fa-tree font-size-105em"></i>
+      <i *ngSwitchCase="elementals[1]" class="fa fa-fire font-size-105em"></i>
+      <i *ngSwitchCase="elementals[2]" class="fa fa-anchor font-size-105em"></i>
+      <i *ngSwitchCase="elementals[3]" class="fa fa-cloud font-size-105em"></i>
+      <i *ngSwitchCase="elementals[4]" class="fa fa-eye font-size-105em"></i>
+      <i *ngSwitchCase="elementals[5]" class="fa fa-star font-size-105em"></i>
+      <div class="absolute margin-left-1em margin-bottom-05em">
+        <span class="absolute color-white font-size-105em bold">{{element.amount}}</span>
+      </div>
+    </div>
+  </ng-container>
+</div>
+
