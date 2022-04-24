@@ -1,0 +1,4 @@
+<div class="height-100per" [ngClass]="{'slot-border': isGraveyardEmpty()}">
+  <app-card class="font-size-0375em" *ngIf="!isGraveyardEmpty()" [card]="getLastGraveyardCard()">
+  </app-card>
+</div>

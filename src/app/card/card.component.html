@@ -1,33 +1,45 @@
-<div aTilt class="game-card">
-  <div class="height-10per border-bottom-image-03em bold align-items justify-content flex">
+<app-hand-card-actions class="relative" [card]="card" *ngIf="card === getSelectedCard()"></app-hand-card-actions>
+<div class="game-card" data-tilt data-tilt-glare="true" data-tilt-max-glare="0.3">
+  <div class="height-10per border-bottom-image-025em bold align-items justify-content flex">
     <span class="flex padding-05em color-white">
       {{card.name}}
     </span>
   </div>
-  <div class="flex height-35per border-bottom-image-03em">
+  <div class="flex height-35per border-bottom-image-025em">
     <div class="width-20per">
       <ng-container *ngFor="let element of card.elementCosts">
         <app-element-icon [element]="element" class="inline-block width-100per height-205em"></app-element-icon>
       </ng-container>
     </div>
-    <div class="width-80per border-left-image-03em">
+    <div class="width-80per border-left-image-025em">
       <img class="width-100per height-100per" src="../../assets/images/cards/{{card.imagePath}}.jpg" alt="image">
     </div>
   </div>
-  <div class="height-10per border-bottom-image-03em bold align-items justify-content flex">
+  <div class="height-10per border-bottom-image-025em bold align-items justify-content flex">
     <span class="flex padding-05em color-white">
       {{card.type}} / {{card.archetype}}
     </span>
   </div>
-  <div class="height-45per">
+  <div class="height-25per">
     <span class="flex padding-05em color-white">
       {{card.description}}
     </span>
   </div>
-  <div>
-    Attack
-  </div>
-  <div>
-    Defense
-  </div>
+  <ng-container *ngIf="isUnit(card)">
+    <div class="height-15per flex">
+      <div class="game-card-stat-wrapper border-radius-top-right">
+        <i class="fa fa-bolt font-size-105em padding-05em"></i>
+        <div class="absolute margin-top-1025em margin-left-105em">
+          <span class="absolute color-white font-size-200per bold">{{card.attack}}</span>
+        </div>
+      </div>
+      <div class="flex-grow"></div>
+      <div class="game-card-stat-wrapper border-radius-top-left">
+        <i class="fa fa-heart font-size-105em padding-05em"></i>
+        <div class="absolute margin-top-1025em margin-left-105em">
+          <span class="absolute color-white font-size-200per bold">{{card.remainingHealth}}</span>
+        </div>
+      </div>
+    </div>
+  </ng-container>
 </div>

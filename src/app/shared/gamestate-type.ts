@@ -2,5 +2,8 @@ export enum GamestateType {
 
   NORMAL = 'Normal',
   PLACE = 'Place',
-  SUMMON = 'Summon'
+  SUMMON = 'Summon',
+  ATTACK = 'Attack',
+  SEARCH = 'Search',
+  SELECT = 'Select'
 }

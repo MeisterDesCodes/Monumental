@@ -1,0 +1,7 @@
+.game-elements {
+  width: 25em;
+  height: 4em;
+  margin-left: 6em;
+  align-items: center;
+  display: flex;
+}

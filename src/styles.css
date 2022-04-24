@@ -22,14 +22,24 @@ body {
 .flex {
   display: flex;
 }
-
 .flex-column {
   display: flex;
   flex-direction: column;
 }
+.flex-grow {
+  display: flex;
+  flex-grow: 1;
+}
+.flex-wrap {
+  display: flex;
+  flex-wrap: wrap;
+}
 
 .absolute {
   position: absolute;
+}
+.relative {
+  position: relative;
 }
 
 .inline-block {
@@ -43,13 +53,43 @@ body {
 .padding-05em {
   padding: 0.5em;
 }
+.padding-1em {
+  padding: 1em;
+}
+.padding-3em {
+  padding: 3em;
+}
+.padding-bottom-2em {
+  padding-bottom: 2em;
+}
+.padding-bottom-3em {
+  padding-bottom: 3em;
+}
+.padding-bottom-5em {
+  padding-bottom: 5em;
+}
 
+.margin-05em {
+  margin: 0.5em;
+}
 
+.top-neg4em {
+  top: -4em;
+}
+.top-neg5em {
+  top: -5em;
+}
 .top-0 {
   top: 0;
 }
+.top-2em {
+  top: -2em;
+}
 .top-5em {
   top: 5em;
+}
+.top-10em {
+  top: 10em;
 }
 .top-20em {
   top: 20em;
@@ -57,12 +97,30 @@ body {
 .top-25em {
   top: 25em;
 }
-.top-neg5em {
-  top: -5em;
+.top-35em {
+  top: 35em;
 }
+.top-100per-neg20em {
+  top: calc(100% - 20em);
+}
+
+.top-20per {
+  top: 20%;
+}
+
+.left-3em {
+  left: 3em;
+}
+
 
 .width-1em {
   width: 1em;
+}
+.width-4em {
+  width: 4em;
+}
+.width-5em {
+  width: 5em;
 }
 .width-6em {
   width: 6em;
@@ -73,11 +131,20 @@ body {
 .width-10em {
   width: 10em;
 }
+.width-11em {
+  width: 11em;
+}
 .width-12em {
   width: 12em;
 }
 .width-14em {
   width: 14em;
+}
+.width-20em {
+  width: 20em;
+}
+.width-100per-neg10em {
+  width: calc(100% - 10em);
 }
 
 
@@ -122,6 +189,9 @@ body {
 .height-305em {
   height: 3.5em;
 }
+.height-7em {
+  height: 7em;
+}
 .height-9em {
   height: 9em;
 }
@@ -143,7 +213,9 @@ body {
 .height-20em {
   height: 20em;
 }
-
+.height-100per-neg10em {
+  height: calc(100% - 10em);
+}
 
 .height-10per {
   height: 10%;
@@ -156,6 +228,9 @@ body {
 }
 .height-25per {
   height: 25%;
+}
+.height-30per {
+  height: 30%;
 }
 .height-35per {
   height: 35%;
@@ -178,6 +253,12 @@ body {
 .height-65per {
   height: 65%;
 }
+.height-70per {
+  height: 70%;
+}
+.height-80per {
+  height: 80%;
+}
 .height-100per {
   height: 100%;
 }
@@ -191,44 +272,153 @@ body {
 }
 
 
-.border-bottom-image-03em {
-  border-bottom: solid black 0.3em;
-  border-image: url("assets/images/backgrounds/wood.jpg") 30 30 round;
+.border-radius-full {
+  border-radius: 100em
+}
+.border-radius-top-right {
+  border-radius: 0 10em 0 0;
+}
+.border-radius-top-left {
+  border-radius: 10em 0 0 0;
 }
 
-.border-left-image-03em {
+.border-image-025em {
+  border: solid black 0.25em;
+  border-image: url("src/assets/images/backgrounds/border-background.jpg") 30 30 round;
+}
+
+.border-bottom-image-025em {
+  border-bottom: solid black 0.25em;
+  border-image: url("src/assets/images/backgrounds/border-background.jpg") 30 30 round;
+}
+
+.border-bottom-image-025em {
+  border-bottom: solid black 0.25em;
+  border-image: url("src/assets/images/backgrounds/border-background.jpg") 30 30 round;
+}
+
+.border-left-image-025em {
   border-left: solid black 0.3em;
-  border-image: url("assets/images/backgrounds/wood.jpg") 30 30 round;
+  border-image: url("src/assets/images/backgrounds/border-background.jpg") 30 30 round;
 }
 
+.background-image {
+  background: url("src/assets/images/backgrounds/card-background.jpg");
+}
+
+.background-white {
+  background: #fff;
+}
 .background-blue {
   background: blue;
+}
+.background-shadow {
+  background: rgba(0, 0, 0, 0.8);
 }
 
 .color-white {
   color: #fff;
 }
 
+.font-size-0375em {
+  font-size: 0.375em;
+}
 .font-size-05em {
   font-size: 0.5em;
 }
-
+.font-size-075em {
+  font-size: 0.75em;
+}
 .font-size-2em {
   font-size: 2em;
 }
-
 .font-size-105em {
   font-size: 1.5rem;
 }
+.font-size-200per {
+  font-size: 200%;
+}
+
 
 .bold {
   font-weight: bold;
 }
 
+.margin-top-1025em {
+  margin-top: 1.25em;
+}
+.margin-top-9em {
+  margin-top: 9em;
+}
+
 .margin-left-1em {
   margin-left: 1em;
+}
+.margin-left-105em {
+  margin-left: 1.5em;
+}
+.margin-left-2em {
+  margin-left: 2em;
+}
+.margin-left-3em {
+  margin-left: 3em;
+}
+.margin-left-5em {
+  margin-left: 5em;
+}
+.margin-left-10em {
+  margin-left: 10em;
 }
 
 .margin-bottom-05em {
   margin-bottom: 0.5em;
+}
+
+
+.object-fit {
+  object-fit: cover;
+}
+
+.overflow-x-hidden {
+  overflow-x: hidden;
+}
+.overflow-y-auto {
+  overflow-y: auto;
+}
+
+
+.slot-border {
+  border: solid #391607 0.1em;
+  box-shadow: inset 0 0 1em 0.1em #fff;
+  border-radius: 0.5em;
+}
+
+.selected > .game-card {
+  box-shadow: 0 0 10px 1px #fff !important;
+}
+
+.app-card {
+  width: 10em;
+  height: 14em;
+  padding: 0.5em;
+  transition: 200ms ease-in-out;
+}
+
+.app-card:not(.selected):hover {
+  transform: scale(1.2);
+  z-index: 1;
+}
+
+.selected {
+  transform: scale(1.2);
+  z-index: 1;
+}
+
+.z-index-1 {
+  z-index: 1;
+}
+
+.js-tilt-glare {
+  border-radius: 1em;
+  display: flex;
 }

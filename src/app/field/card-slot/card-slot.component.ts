@@ -1,10 +1,12 @@
-import {Component, Input, OnInit} from '@angular/core';
+import {Component, Input} from '@angular/core';
 import {Card} from "../../shared/card";
 import {GamestateHandler} from "../../services/gamestate-handler";
 import {GamestateType} from "../../shared/gamestate-type";
 import {CardHandler} from "../../services/card-handler";
 import {CardAction} from "../../shared/card-action";
 import {CardType} from "../../shared/card-type";
+import {Player} from "../../shared/player";
+import {PlayerHandler} from "../../services/player-handler";
 
 @Component({
   selector: 'app-card-slot',
@@ -13,10 +15,12 @@ import {CardType} from "../../shared/card-type";
 })
 export class CardSlotComponent {
 
-  @Input() card!: Card;
+  @Input() card!: Card | null;
   @Input() rowType!: CardType;
+  @Input() player!: Player;
 
-  constructor(private gamestateHandler: GamestateHandler, private cardHandler: CardHandler) { }
+  constructor(private gamestateHandler: GamestateHandler, private cardHandler: CardHandler,
+              private playerHandler: PlayerHandler) { }
 
   performAction(): void {
     let activeCard = this.cardHandler.getActiveCard();
@@ -24,23 +28,65 @@ export class CardSlotComponent {
     if (activeCard && activeCardAction) {
       switch (activeCardAction) {
         case CardAction.SUMMON:
-          this.cardHandler.summonCard(activeCard);
+          if (this.canSummonCard()) {
+            this.cardHandler.summonCard(activeCard);
+            this.cardHandler.payElementCost(activeCard);
+            this.cardHandler.resetState();
+            this.setCard(activeCard);
+          }
           break;
         case CardAction.PLACE:
-          this.cardHandler.placeCard(activeCard);
+          if (this.canPlaceCard()) {
+            this.cardHandler.placeCard(activeCard);
+            this.cardHandler.payElementCost(activeCard);
+            this.cardHandler.resetState();
+            this.setCard(activeCard);
+          }
+          break;
+        case CardAction.ATTACK:
+          if (this.isAttackable()) {
+            this.cardHandler.attackUnit(activeCard, this.card!);
+          }
           break;
       }
-      this.cardHandler.payElementCost(activeCard);
-      this.card = activeCard;
     }
-    this.cardHandler.setActiveCard(null);
-    this.cardHandler.setActiveCardAction(null);
-    this.gamestateHandler.setGamestate(GamestateType.NORMAL);
   }
 
   isUsable(): boolean {
+    return this.canSummonCard() || this.canPlaceCard();
+  }
+
+  canSummonCard(): boolean {
     return !this.card &&
-      this.gamestateHandler.isValidGamestate([GamestateType.SUMMON, GamestateType.PLACE]) &&
+      this.gamestateHandler.isValidGamestate([GamestateType.SUMMON]) &&
+      this.playerHandler.getCurrentPlayer() === this.player &&
       this.rowType === this.cardHandler.getActiveCard()!.type;
+  }
+
+  canPlaceCard(): boolean {
+    return !this.card && this.cardHandler.getActiveCard()! &&
+      this.gamestateHandler.isValidGamestate([GamestateType.PLACE]) &&
+      this.playerHandler.getCurrentPlayer() === this.player &&
+      this.rowType === this.cardHandler.getActiveCard()!.type;
+  }
+
+  isAttackable(): boolean {
+    return this.card! && this.cardHandler.getActiveCard()! && this.card.type === CardType.UNIT &&
+      this.gamestateHandler.isValidGamestate([GamestateType.ATTACK]) &&
+      this.card.owner !== this.cardHandler.getActiveCard()!.owner;
+  }
+
+  setSelectedCard(card: Card) {
+    this.getSelectedCard() !== card ? this.cardHandler.setSelectedCard(card) :
+      this.cardHandler.setSelectedCard(null);
+  }
+
+  getSelectedCard(): Card | null {
+    return this.cardHandler.getSelectedCard();
+  }
+
+  setCard(card: Card): void {
+    this.card = card;
+    this.card.slot = this;
   }
 }

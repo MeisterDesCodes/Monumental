@@ -1,0 +1,11 @@
+.game-player {
+  width: 10em;
+  height: 10em;
+  background: url("src/assets/images/backgrounds/card-background.jpg");
+  background-size: cover;
+  border: solid 0.5em #391607;
+  border-radius: 100em;
+  align-items: center;
+  justify-content: center;
+  display: flex;
+}

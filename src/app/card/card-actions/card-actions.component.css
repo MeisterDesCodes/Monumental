@@ -1,0 +1,15 @@
+.card-action-button {
+  width: 6em;
+  height: 100%;
+  font-weight: bold;
+  color: #fff;
+  background: url("src/assets/images/backgrounds/card-background.jpg");
+  background-size: cover;
+  border: 0.25em solid #391607;
+  border-radius: 1em;
+  transition: 200ms ease-in-out;
+}
+
+.card-action-button:hover {
+  transform: scale(1.2);
+}

@@ -1,0 +1,8 @@
+<div class="width-100per height-100per background-shadow align-items justify-content flex">
+  <div class="width-100per-neg10em height-100per-neg10em flex-wrap z-index-1 overflow-x-hidden overflow-y-auto
+  padding-3em">
+    <ng-container *ngFor="let card of getCards()">
+        <app-card class="app-card" (click)="selectCard(card)" [card]="card"></app-card>
+    </ng-container>
+  </div>
+</div>

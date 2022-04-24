@@ -1,6 +1,17 @@
 .game-card {
+  font-size: 0.75em;
   height: 100%;
   background: url("../../assets/images/backgrounds/card-background.jpg");
-  border: solid #000 0.5em;
-  border-image: url("../../assets/images/backgrounds/wood.jpg") 30 30 round;
+  background-size: cover;
+  border: solid #391607 0.25em;
+  border-radius: 1em;
+  box-shadow: 0 0 1em 0.5em #000;
+  transition: 200ms ease-in-out;
+}
+
+.game-card-stat-wrapper {
+  width: 3em;
+  color: #414040;
+  background: url("src/assets/images/backgrounds/border-background.jpg");
+  display: flex;
 }

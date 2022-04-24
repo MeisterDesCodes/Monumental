@@ -1,4 +1,5 @@
-<div class="game-card-slot" (click)="isUsable() && performAction()"
-     [ngClass]="{'usable': isUsable(), 'slot-border': !card}">
-  <app-card class="font-size-05em" *ngIf="card" [card]="card"></app-card>
+<div class="game-card-slot" (click)="performAction()"
+     [ngClass]="{'usable': isUsable(), 'attackable': isAttackable(), 'slot-border': !card}">
+  <app-card (click)="setSelectedCard(card)" class="font-size-0375em" *ngIf="card" [card]="card"
+            [ngClass]="{'selected': card === getSelectedCard()}"></app-card>
 </div>

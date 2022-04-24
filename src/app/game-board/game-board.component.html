@@ -1,10 +1,11 @@
 <app-admin-panel></app-admin-panel>
-<app-phases class="absolute top-5em"></app-phases>
-<app-field></app-field>
+<app-search-view *ngIf="isSearchState()" class="absolute top-0 width-100per height-100per"></app-search-view>
+<app-field [player]="players[1]" [order]="1"></app-field>
+<app-field [player]="players[0]" [order]="0"></app-field>
 <ng-container *ngFor="let player of players">
   <ng-container *ngIf="player === getCurrentPlayer()">
-    <app-elements [elements]="player.elementals" class="absolute top-0"></app-elements>
+    <app-player-panel [player]="player" class="absolute top-0"></app-player-panel>
     <app-hand [hand]="player.hand"
-              class="flex justify-content fixed width-100per height-14em top-25em"></app-hand>
+              class="flex justify-content fixed width-100per height-14em top-100per-neg20em"></app-hand>
   </ng-container>
 </ng-container>

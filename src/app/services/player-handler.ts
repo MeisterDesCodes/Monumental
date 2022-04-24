@@ -1,6 +1,8 @@
-import {DeckHandler} from "./deck-handler";
 import {Player} from "../shared/player";
 import {Injectable} from "@angular/core";
+import {CardType} from "../shared/card-type";
+import {Card} from "../shared/card";
+import {Bowman, Warrior} from "../shared/hero";
 
 @Injectable()
 export class PlayerHandler {
@@ -8,16 +10,18 @@ export class PlayerHandler {
   currentPlayer: Player = new Player();
   players: Player[] = [];
 
-  constructor(private deckBuilder: DeckHandler) {
+  constructor() {
   }
 
   generatePlayer(name: string): Player {
     let player = new Player();
     player.name = name;
-    player.deck = this.deckBuilder.generateDeck(player);
-    player.hand = this.deckBuilder.generateHand(player);
     if (name === 'Player 1') {
+      player.hero = new Warrior();
       this.setCurrentPlayer(player);
+    }
+    else {
+      player.hero = new Bowman();
     }
     this.players.push(player);
     return player;
@@ -37,5 +41,13 @@ export class PlayerHandler {
 
   switchPlayers() {
     this.currentPlayer = this.currentPlayer === this.players[0] ? this.players[1] : this.players[0];
+  }
+
+  getEnemyPlayer(): Player {
+    return this.currentPlayer === this.players[0] ? this.players[1] : this.players[0];
+  }
+
+  getEnemyUnits(): Card[] {
+    return this.getEnemyPlayer().field.cards.filter(card => card.type === CardType.UNIT);
   }
 }

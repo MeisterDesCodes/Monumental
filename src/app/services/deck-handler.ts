@@ -1,5 +1,4 @@
 import {Deck} from "../shared/deck";
-import {Hand} from "../shared/hand";
 import {CardHandler} from "./card-handler";
 import {Player} from "../shared/player";
 import {Injectable} from "@angular/core";
@@ -15,16 +14,12 @@ export class DeckHandler {
   constructor(private cardHandler: CardHandler, private testDeck: TestDeck) {
   }
 
-  generateDeck(player: Player): Deck {
+  setupCards(player: Player): void {
     let deck: Deck = _.cloneDeep(this.testDeck.deck);
     deck.cards.forEach(card => card.owner = player);
     this.shuffleDeck(deck);
-    return deck;
-  }
-
-  generateHand(player: Player): Hand {
+    player.deck = deck;
     this.cardHandler.drawCards(player, this.initialHandSize);
-    return player.hand;
   }
 
   shuffleDeck(deck: Deck) {

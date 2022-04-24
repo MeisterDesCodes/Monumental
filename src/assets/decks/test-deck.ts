@@ -4,7 +4,7 @@ import {
   MagicalTreehouses,
   Sawmill,
   Scout,
-  SpiritWolf,
+  SpiritWolf, VerdantLair,
   WoodFactory,
   WoodlandHuntress
 } from "../../app/shared/card";
@@ -38,7 +38,10 @@ export class TestDeck {
       new WoodlandHuntress(),
       new JungleElf(),
       new JungleElf(),
-      new JungleElf()
+      new JungleElf(),
+      new VerdantLair(),
+      new VerdantLair(),
+      new VerdantLair()
     ]
   }
 }

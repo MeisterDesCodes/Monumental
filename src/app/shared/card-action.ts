@@ -3,5 +3,7 @@ export enum CardAction {
   SUMMON = 'Summon',
   PLACE = 'Place',
   ACTIVATE = 'Activate',
-  DISCARD = 'Discard'
+  DISCARD = 'Discard',
+  ATTACK = 'Attack',
+  DRAW = 'Draw',
 }

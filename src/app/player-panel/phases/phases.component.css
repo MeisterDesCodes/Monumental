@@ -1,0 +1,34 @@
+.game-phases {
+  width: 25em;
+  height: 3em;
+  margin-left: 6em;
+  align-items: center;
+  display: flex;
+}
+
+.game-phases > button {
+  font-weight: bold;
+  width: 20%;
+  height: 100%;
+  color: #fff;
+  border: none;
+  border-radius: 5em;
+  box-shadow: inset 0 0 25px #000;
+  transition: 200ms ease-in-out;
+}
+
+.completed {
+  background: #8f0a0a;
+}
+
+.current {
+  background: #065b06;
+}
+
+.selectable {
+  background: #101094;
+}
+
+.selectable:hover {
+  background: #37377a;
+}

@@ -1,0 +1,22 @@
+<div class="game-phases">
+  <button [ngClass]="{'completed': isCompletedPhase(gamePhases[0]), 'current': isCurrentPhase(gamePhases[0]),
+  'selectable': isSelectablePhase(gamePhases[0])}">
+    <span>Draw Phase</span>
+  </button>
+  <button [ngClass]="{'completed': isCompletedPhase(gamePhases[1]), 'current': isCurrentPhase(gamePhases[1]),
+  'selectable': isSelectablePhase(gamePhases[1])}">
+    <span>Standby Phase</span>
+  </button>
+  <button [ngClass]="{'completed': isCompletedPhase(gamePhases[2]), 'current': isCurrentPhase(gamePhases[2]),
+  'selectable': isSelectablePhase(gamePhases[2])}">
+    <span>Main Phase</span>
+  </button>
+  <button  [ngClass]="{'completed': isCompletedPhase(gamePhases[3]), 'current': isCurrentPhase(gamePhases[3]),
+  'selectable': isSelectablePhase(gamePhases[3])}" (click)="enterCombatPhase()">
+    <span>Combat Phase</span>
+  </button>
+  <button  [ngClass]="{'completed': isCompletedPhase(gamePhases[4]), 'current': isCurrentPhase(gamePhases[4]),
+  'selectable': isSelectablePhase(gamePhases[4])}" (click)="enterEndPhase()">
+    <span>End Phase</span>
+  </button>
+</div>

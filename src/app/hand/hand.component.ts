@@ -1,6 +1,7 @@
 import {Component, Input, OnInit} from '@angular/core';
 import {Hand} from "../shared/hand";
 import {Card} from "../shared/card";
+import {CardHandler} from "../services/card-handler";
 
 @Component({
   selector: 'app-hand',
@@ -11,11 +12,14 @@ export class HandComponent {
 
   @Input() hand!: Hand;
 
-  selectedCard: Card | null = null;
+  constructor(private cardHandler: CardHandler) { }
 
-  constructor() { }
+  setSelectedCard(card: Card) {
+    this.getSelectedCard() !== card ? this.cardHandler.setSelectedCard(card) :
+      this.cardHandler.setSelectedCard(null);
+  }
 
-  selectCard(card: Card) {
-    this.selectedCard === card ? this.selectedCard = null : this.selectedCard = card;
+  getSelectedCard(): Card | null {
+    return this.cardHandler.getSelectedCard();
   }
 }
