@@ -17,11 +17,14 @@ export class UnitHandler {
     }
   }
 
-  damageAllUnits(card: Card, amount: number) {
+  damageAllEnemyUnits(card: Card, amount: number) {
     this.playerHandler.getEnemyUnits().forEach(unit => this.damageUnit(card, unit, amount));
   }
 
   healUnit(card: Card, amount: number): void {
-    card.remainingHealth += amount - (amount - (card.maxHealth - card.remainingHealth));
+    card.remainingHealth += amount;
+    if (card.remainingHealth > card.maxHealth) {
+      card.remainingHealth = card.maxHealth;
+    }
   }
 }

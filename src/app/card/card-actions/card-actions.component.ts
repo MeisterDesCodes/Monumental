@@ -1,6 +1,6 @@
 import {Component, Input, OnInit} from '@angular/core';
 import {Card} from "../../shared/card";
-import {CardAction} from "../../shared/card-action";
+import {CardAction} from "../../shared/enums/card-action";
 import {CardHandler} from "../../services/card-handler";
 import {PlayerHandler} from "../../services/player-handler";
 

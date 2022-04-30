@@ -1,14 +1,14 @@
 import {Card} from "../shared/card";
 import {Player} from "../shared/player";
 import {Injectable} from "@angular/core";
-import {Element} from "../shared/element";
+import {Element} from "../shared/models/element";
 import {GamestateHandler} from "./gamestate-handler";
-import {GamestateType} from "../shared/gamestate-type";
-import {CardAction} from "../shared/card-action";
-import {CardType} from "../shared/card-type";
-import {CardLocation} from "../shared/card-location";
+import {GamestateType} from "../shared/enums/gamestate-type";
+import {CardAction} from "../shared/enums/card-action";
+import {CardType} from "../shared/enums/card-type";
+import {CardLocation} from "../shared/enums/card-location";
 import {GamephaseHandler} from "./gamephase-handler";
-import {GamephaseType} from "../shared/gamephase-type";
+import {GamephaseType} from "../shared/enums/gamephase-type";
 import {PlayerHandler} from "./player-handler";
 
 @Injectable()
@@ -83,11 +83,11 @@ export class CardHandler {
   placeOrSummonCard(card: Card) {
     this.removeCardFromHand(card);
     this.addCardToField(card);
-    this.setActiveCard(null);
   }
 
   activateCard(card: Card) {
     if (card.type === CardType.SPELL) {
+      this.payElementCosts(card);
       this.sendCardFromHandToGraveyard(card);
     }
     else {
@@ -102,19 +102,26 @@ export class CardHandler {
   }
 
   attackUnit(attacker: Card, defender: Card) {
-    defender.remainingHealth -= attacker.attack;
-    attacker.remainingHealth -= defender.attack;
+    defender.remainingHealth -= Math.ceil(attacker.attack * attacker.attackModifierOnAttack() *
+      defender.defenseModifierOnBeingAttacked());
+    attacker.remainingHealth -= Math.ceil(defender.attack * attacker.defenseModifierOnAttack() *
+      defender.attackModifierOnBeingAttacked());
     if (defender.remainingHealth <= 0) {
-      this.sendCardFromFieldToGraveyard(defender);
-      defender.onKill();
+      this.killUnit(defender);
+      attacker.onKill();
     }
     if (attacker.remainingHealth <= 0) {
-      this.sendCardFromFieldToGraveyard(attacker);
-      attacker.onKill();
+      this.killUnit(attacker);
+      defender.onKill();
     }
     attacker.remainingAttacks--;
     this.resetState();
     attacker.onAttack();
+    defender.onBeingAttacked();
+  }
+
+  killUnit(card: Card): void {
+    this.sendCardFromFieldToGraveyard(card);
   }
 
   removeCardFromHand(card: Card) {
@@ -185,11 +192,7 @@ export class CardHandler {
   }
 
   attackDirectly(card: Card): void {
-    let enemyPlayer: Player = this.playerHandler.getEnemyPlayer();
-    enemyPlayer.remainingHealth -= card.attack;
-    if (enemyPlayer.remainingHealth <= 0) {
-      //TODO
-    }
+    this.playerHandler.damagePlayer(this.playerHandler.getEnemyPlayer(), card.attack);
     card.remainingAttacks--;
     this.resetState();
     card.onAttack();
@@ -197,22 +200,30 @@ export class CardHandler {
   }
 
   canActivateCard(card: Card): boolean {
-    return card.remainingUses >= 1;
+    return card.canActivate() && this.canPayActivationCosts(card) && card.remainingUses >= 1;
   }
 
   canSummonCard(card: Card): boolean {
-    if (card.location !== CardLocation.HAND
-      || !this.gamephaseHandler.isValidGamePhase([GamephaseType.MAIN])) {
-      return false;
-    }
+   return card.location === CardLocation.HAND &&
+     this.gamephaseHandler.isValidGamePhase([GamephaseType.MAIN]) && this.canPayElementCosts(card);
+  }
+
+  canPayElementCosts(card: Card): boolean {
     for (let i = 0; i < card.elementCosts.length; i++) {
-      let element: Element | undefined =
-        card.owner.elementals.find(element => element.type === card.elementCosts[i].type);
+      let element: Element = this.playerHandler.getElement(card.owner, card.elementCosts[i].type);
       if (!element || element.amount < card.elementCosts[i].amount) {
         return false;
       }
     }
     return true;
+  }
+
+  canPayActivationCosts(card: Card): boolean {
+    if (card.type === CardType.SPELL) {
+      return this.canPayElementCosts(card);
+    } else {
+      return card.canPayActivationCosts();
+    }
   }
 
   canPlaceCard(card: Card): boolean {
@@ -229,18 +240,16 @@ export class CardHandler {
   }
 
   gainElement(player: Player, element: Element): void {
-    let tempElement: Element | undefined =
-      player.elementals.find(playerElement => playerElement.type === element.type);
+    let tempElement: Element = this.playerHandler.getElement(player, element.type);
     tempElement ? tempElement.amount += element.amount : player.elementals.push(element);
   }
 
-  payElementCost(card: Card): void {
+  payElementCosts(card: Card): void {
     for (let i = 0; i < card.elementCosts.length; i++) {
-      let element: Element | undefined =
-        card.owner.elementals.find(element => element.type === card.elementCosts[i].type);
-      element!.amount -= card.elementCosts[i].amount;
-      if (element!.amount === 0) {
-        //TODO card.owner.elements.splice(card.owner.elements.indexOf(element!, 1));
+      let element: Element = this.playerHandler.getElement(card.owner, card.elementCosts[i].type);
+      element.amount -= card.elementCosts[i].amount;
+      if (element.amount === 0) {
+        card.owner.elementals.splice(card.owner.elementals.indexOf(element), 1);
       }
     }
   }
@@ -259,11 +268,14 @@ export class CardHandler {
   }
 
   resetCards(player: Player): void {
-    this.getAllCardsFromPlayer(player).forEach(card => card.remainingUses = card.maxUses);
+    this.getAllCardsFromPlayer(player).forEach(card => {
+      card.remainingUses = card.maxUses;
+      card.remainingAttacks = card.maxAttacks;
+    });
   }
 
   getAllCardsFromPlayer(player: Player): Card[] {
-    return player.hand.cards.concat(player.deck.cards);
+    return player.hand.cards.concat(player.deck.cards).concat(player.field.cards).concat(player.graveyard.cards);
   }
 
   triggerStandbyPhase(player: Player): void {

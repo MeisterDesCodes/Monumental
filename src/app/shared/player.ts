@@ -1,9 +1,9 @@
-import {Element} from "./element";
-import {Deck} from "./deck";
-import {Hand} from "./hand";
+import {Element} from "./models/element";
+import {Deck} from "./models/deck";
+import {Hand} from "./models/hand";
 import {Injectable} from "@angular/core";
-import {Field} from "./field";
-import {Graveyard} from "./graveyard";
+import {Field} from "./models/field";
+import {Graveyard} from "./models/graveyard";
 import {Hero} from "./hero";
 
 @Injectable()
@@ -11,7 +11,7 @@ export class Player {
 
   name: string = '';
   hero: Hero = new Hero();
-  maxHealth: number = 20;
+  maxHealth: number = 40;
   remainingHealth = this.maxHealth;
   elementals: Element[] = [];
 

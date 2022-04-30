@@ -1,4 +1,4 @@
-import {ElementType} from './element-type';
+import {ElementType} from '../enums/element-type';
 
 export interface Element {
 

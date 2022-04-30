@@ -1,4 +1,4 @@
-import {Deck} from "../shared/deck";
+import {Deck} from "../shared/models/deck";
 import {CardHandler} from "./card-handler";
 import {Player} from "../shared/player";
 import {Injectable} from "@angular/core";

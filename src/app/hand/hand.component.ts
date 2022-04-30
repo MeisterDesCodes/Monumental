@@ -1,5 +1,5 @@
 import {Component, Input, OnInit} from '@angular/core';
-import {Hand} from "../shared/hand";
+import {Hand} from "../shared/models/hand";
 import {Card} from "../shared/card";
 import {CardHandler} from "../services/card-handler";
 

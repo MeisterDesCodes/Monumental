@@ -1,13 +1,13 @@
 import {Component, Input, OnInit} from '@angular/core';
-import {Element} from "../../shared/element";
-import {ElementType} from "../../shared/element-type";
+import {Element} from "../../shared/models/element";
+import {ElementType} from "../../shared/enums/element-type";
 
 @Component({
   selector: 'app-element-icon',
   templateUrl: './element-icon.component.html',
   styleUrls: ['./element-icon.component.css']
 })
-export class ElementIconComponent implements OnInit {
+export class ElementIconComponent {
 
   @Input() element!: Element;
 
@@ -15,8 +15,4 @@ export class ElementIconComponent implements OnInit {
     ElementType.SHADOW, ElementType.DAWN];
 
   constructor() { }
-
-  ngOnInit(): void {
-  }
-
 }

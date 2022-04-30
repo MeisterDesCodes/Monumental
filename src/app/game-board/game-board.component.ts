@@ -3,11 +3,11 @@ import {DeckHandler} from "../services/deck-handler";
 import {Player} from "../shared/player";
 import {PlayerHandler} from "../services/player-handler";
 import {CardHandler} from "../services/card-handler";
-import {ElementType} from "../shared/element-type";
+import {ElementType} from "../shared/enums/element-type";
 import {GamephaseHandler} from "../services/gamephase-handler";
 import {PhasesComponent} from "../player-panel/phases/phases.component";
 import {GamestateHandler} from "../services/gamestate-handler";
-import {GamestateType} from "../shared/gamestate-type";
+import {GamestateType} from "../shared/enums/gamestate-type";
 
 @Component({
   selector: 'app-game-board',
@@ -27,8 +27,10 @@ export class GameBoardComponent implements OnInit {
   ngOnInit() {
     this.cardHandler.gainElement(this.playerOne, {type: ElementType.WOOD, amount: 10});
     this.cardHandler.gainElement(this.playerOne, {type: ElementType.FIRE, amount: 10});
+    this.cardHandler.gainElement(this.playerOne, {type: ElementType.DAWN, amount: 10});
     this.cardHandler.gainElement(this.playerTwo, {type: ElementType.WOOD, amount: 10});
     this.cardHandler.gainElement(this.playerTwo, {type: ElementType.FIRE, amount: 10});
+    this.cardHandler.gainElement(this.playerTwo, {type: ElementType.DAWN, amount: 10});
     this.deckHandler.setupCards(this.playerOne);
     this.deckHandler.setupCards(this.playerTwo);
     this.phasesComponent.startTurn();

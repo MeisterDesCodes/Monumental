@@ -1,7 +1,7 @@
 import {Component, Input, OnInit} from '@angular/core';
 import {Card} from '../shared/card';
 import VanillaTilt from "vanilla-tilt";
-import {CardType} from "../shared/card-type";
+import {CardType} from "../shared/enums/card-type";
 import {CardHandler} from "../services/card-handler";
 
 @Component({

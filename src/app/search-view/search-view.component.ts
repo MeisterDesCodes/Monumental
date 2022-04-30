@@ -1,9 +1,9 @@
 import {Component} from '@angular/core';
-import {Card, VerdantLair} from "../shared/card";
+import {Card, GreenLair} from "../shared/card";
 import {GamestateHandler} from "../services/gamestate-handler";
-import {GamestateType} from "../shared/gamestate-type";
+import {GamestateType} from "../shared/enums/gamestate-type";
 import {CardHandler} from "../services/card-handler";
-import {CardAction} from "../shared/card-action";
+import {CardAction} from "../shared/enums/card-action";
 
 @Component({
   selector: 'app-search-view',
@@ -12,8 +12,8 @@ import {CardAction} from "../shared/card-action";
 })
 export class SearchViewComponent {
 
-  cards: Card[] = [new VerdantLair(), new VerdantLair(), new VerdantLair(), new VerdantLair(), new VerdantLair(),
-    new VerdantLair(), new VerdantLair(), new VerdantLair(), new VerdantLair(), new VerdantLair()]
+  cards: Card[] = [new GreenLair(), new GreenLair(), new GreenLair(), new GreenLair(), new GreenLair(),
+    new GreenLair(), new GreenLair(), new GreenLair(), new GreenLair(), new GreenLair()]
 
   constructor(private gamestateHandler: GamestateHandler, private cardHandler: CardHandler) { }
 

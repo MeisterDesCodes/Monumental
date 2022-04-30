@@ -1,5 +1,5 @@
 <app-admin-panel></app-admin-panel>
-<app-search-view *ngIf="isSearchState()" class="absolute top-0 width-100per height-100per"></app-search-view>
+<app-search-view *ngIf="isSearchState()" class="absolute top-0 width-100per height-100per z-index-1"></app-search-view>
 <app-field [player]="players[1]" [order]="1"></app-field>
 <app-field [player]="players[0]" [order]="0"></app-field>
 <ng-container *ngFor="let player of players">

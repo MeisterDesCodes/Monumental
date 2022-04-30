@@ -5,11 +5,7 @@ import { Component, OnInit } from '@angular/core';
   templateUrl: './stats-icon.component.html',
   styleUrls: ['./stats-icon.component.css']
 })
-export class StatsIconComponent implements OnInit {
+export class StatsIconComponent {
 
   constructor() { }
-
-  ngOnInit(): void {
-  }
-
 }

@@ -1,10 +1,10 @@
 import {Component, Input} from '@angular/core';
 import {Card} from "../../shared/card";
 import {GamestateHandler} from "../../services/gamestate-handler";
-import {GamestateType} from "../../shared/gamestate-type";
+import {GamestateType} from "../../shared/enums/gamestate-type";
 import {CardHandler} from "../../services/card-handler";
-import {CardAction} from "../../shared/card-action";
-import {CardType} from "../../shared/card-type";
+import {CardAction} from "../../shared/enums/card-action";
+import {CardType} from "../../shared/enums/card-type";
 import {Player} from "../../shared/player";
 import {PlayerHandler} from "../../services/player-handler";
 
@@ -29,17 +29,17 @@ export class CardSlotComponent {
       switch (activeCardAction) {
         case CardAction.SUMMON:
           if (this.canSummonCard()) {
-            this.cardHandler.summonCard(activeCard);
-            this.cardHandler.payElementCost(activeCard);
             this.cardHandler.resetState();
+            this.cardHandler.summonCard(activeCard);
+            this.cardHandler.payElementCosts(activeCard);
             this.setCard(activeCard);
           }
           break;
         case CardAction.PLACE:
           if (this.canPlaceCard()) {
-            this.cardHandler.placeCard(activeCard);
-            this.cardHandler.payElementCost(activeCard);
             this.cardHandler.resetState();
+            this.cardHandler.placeCard(activeCard);
+            this.cardHandler.payElementCosts(activeCard);
             this.setCard(activeCard);
           }
           break;
@@ -57,7 +57,7 @@ export class CardSlotComponent {
   }
 
   canSummonCard(): boolean {
-    return !this.card &&
+    return !this.card && this.cardHandler.getActiveCard()! &&
       this.gamestateHandler.isValidGamestate([GamestateType.SUMMON]) &&
       this.playerHandler.getCurrentPlayer() === this.player &&
       this.rowType === this.cardHandler.getActiveCard()!.type;

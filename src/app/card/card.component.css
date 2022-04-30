@@ -10,8 +10,10 @@
 }
 
 .game-card-stat-wrapper {
-  width: 3em;
+  width: 25%;
   color: #414040;
   background: url("src/assets/images/backgrounds/border-background.jpg");
+  box-shadow: 0 0 10px 1px black;
   display: flex;
+  z-index: 1;
 }

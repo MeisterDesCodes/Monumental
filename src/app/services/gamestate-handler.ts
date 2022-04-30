@@ -1,4 +1,4 @@
-import {GamestateType} from "../shared/gamestate-type";
+import {GamestateType} from "../shared/enums/gamestate-type";
 import {Injectable} from "@angular/core";
 
 @Injectable()
