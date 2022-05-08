@@ -29,6 +29,7 @@ import { PlayerPanelComponent } from './player-panel/player-panel.component';
 import { SearchViewComponent } from './search-view/search-view.component';
 import {SearchHandler} from "./services/search-handler";
 import {MatGridListModule} from '@angular/material/grid-list';
+import {MusicHandler} from "./services/music-handler";
 
 export let serviceInjector: Injector;
 
@@ -68,7 +69,8 @@ export let serviceInjector: Injector;
     PhasesComponent,
     UnitHandler,
     SearchHandler,
-    SearchViewComponent
+    SearchViewComponent,
+    MusicHandler
   ],
   bootstrap: [AppComponent]
 })

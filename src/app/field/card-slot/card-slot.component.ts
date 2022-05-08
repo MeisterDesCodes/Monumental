@@ -89,4 +89,9 @@ export class CardSlotComponent {
     this.card = card;
     this.card.slot = this;
   }
+
+  isSelectable(): boolean {
+    return this.card! && this.gamestateHandler.isValidGamestate([GamestateType.SELECT]) &&
+      this.cardHandler.getActiveSearchCards()!.includes(this.card);
+  }
 }

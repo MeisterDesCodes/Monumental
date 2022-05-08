@@ -11,8 +11,8 @@ export class UnitHandler {
 
   damageUnit(attacker: Card, defender: Card, amount: number) {
     defender.remainingHealth -= amount
-    attacker.onKill();
-    if (attacker.remainingHealth <= 0) {
+    if (defender.remainingHealth <= 0) {
+      attacker.onKill();
       this.cardHandler.sendCardFromFieldToGraveyard(defender);
     }
   }

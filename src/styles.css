@@ -61,6 +61,7 @@ body {
 .padding-3em {
   padding: 3em;
 }
+
 .padding-bottom-2em {
   padding-bottom: 2em;
 }
@@ -69,6 +70,10 @@ body {
 }
 .padding-bottom-5em {
   padding-bottom: 5em;
+}
+
+.padding-top-5em {
+  padding-top: 5em;
 }
 
 .margin-05em {
@@ -112,6 +117,10 @@ body {
 
 .left-3em {
   left: 3em;
+}
+
+.right-0 {
+  right: 0;
 }
 
 
@@ -193,6 +202,9 @@ body {
 }
 .height-7em {
   height: 7em;
+}
+.height-8em {
+  height: 8em;
 }
 .height-9em {
   height: 9em;
@@ -421,6 +433,9 @@ body {
 
 .z-index-1 {
   z-index: 1;
+}
+.z-index-2 {
+  z-index: 2;
 }
 
 .js-tilt-glare {

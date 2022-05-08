@@ -1,10 +1,11 @@
 import {Player} from "../shared/player";
 import {Injectable} from "@angular/core";
 import {CardType} from "../shared/enums/card-type";
-import {Card} from "../shared/card";
+import {Card, SP} from "../shared/card";
 import {Bowman, Warrior} from "../shared/hero";
 import {Element} from "../shared/models/element";
 import {ElementType} from "../shared/enums/element-type";
+import {Archetype} from "../shared/enums/archetype";
 
 @Injectable()
 export class PlayerHandler {
@@ -41,7 +42,7 @@ export class PlayerHandler {
     return this.players;
   }
 
-  switchPlayers() {
+  switchPlayers(): void {
     this.currentPlayer = this.currentPlayer === this.players[0] ? this.players[1] : this.players[0];
   }
 
@@ -55,6 +56,26 @@ export class PlayerHandler {
 
   getOtherUnits(cardToExclude: Card): Card[] {
     return this.currentPlayer.field.cards.filter(card => card.type === CardType.UNIT && card !== cardToExclude);
+  }
+
+  modifyUnitStats(attackAmount: number, healthAmount: number): void {
+    this.getUnits().forEach(unit => {
+      if (unit.archetype === Archetype.WOODLANDS) {
+        unit.attack += attackAmount;
+        unit.maxHealth += healthAmount;
+        unit.remainingHealth += healthAmount;
+      }
+    });
+  }
+
+  modifyOtherUnitStats(attackAmount: number, healthAmount: number, cardToExclude: Card): void {
+    this.getOtherUnits(cardToExclude).forEach(unit => {
+      if (unit.archetype === Archetype.WOODLANDS) {
+        unit.attack += attackAmount;
+        unit.maxHealth += healthAmount;
+        unit.remainingHealth += healthAmount;
+      }
+    });
   }
 
   getEnemyPlayer(): Player {

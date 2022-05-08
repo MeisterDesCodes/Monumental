@@ -22,6 +22,7 @@
     "angular-material": "^1.2.4",
     "angular-tilt": "^1.2.0",
     "font-awesome": "^4.7.0",
+    "howler": "^2.2.3",
     "lodash": "^4.17.21",
     "rxjs": "~7.5.0",
     "tslib": "^2.3.0",

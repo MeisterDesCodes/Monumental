@@ -9,3 +9,7 @@
 .attackable {
   box-shadow: 0 0 1em 0.1em red;
 }
+
+.selectable {
+  box-shadow: 0 0 1em 0.1em blue;
+}

@@ -19,9 +19,17 @@ export class CardHandler {
   activeCardAction: CardAction | null = null;
   activeSearchCards: Card[] | null = null;
   activeSearchCardsAction: CardAction | null = null;
+  activeSearchCardsCount: number = 0;
+  selectedSearchCards: Card[] | null = null;
+
+  chain: Function[] = [];
 
   constructor(private gamestateHandler: GamestateHandler, private gamephaseHandler: GamephaseHandler,
               private playerHandler: PlayerHandler) {
+  }
+
+  addToChain(chainFunction: Function): void {
+
   }
 
   setSelectedCard(card: Card | null): void {
@@ -64,6 +72,22 @@ export class CardHandler {
     return this.activeSearchCardsAction;
   }
 
+  setActiveSearchCardsCount(count: number): void {
+    this.activeSearchCardsCount = count;
+  }
+
+  getActiveSearchCardsCount(): number {
+    return this.activeSearchCardsCount;
+  }
+
+  setSelectedSearchCards(cards: Card[] | null): void {
+    this.selectedSearchCards = cards;
+  }
+
+  getSelectedSearchCards(): Card[] | null {
+    return this.selectedSearchCards;
+  }
+
   resetState(): void {
     this.setActiveCard(null);
     this.setActiveCardAction(null);
@@ -102,6 +126,7 @@ export class CardHandler {
   }
 
   attackUnit(attacker: Card, defender: Card) {
+    this.resetState();
     defender.remainingHealth -= Math.ceil(attacker.attack * attacker.attackModifierOnAttack() *
       defender.defenseModifierOnBeingAttacked());
     attacker.remainingHealth -= Math.ceil(defender.attack * attacker.defenseModifierOnAttack() *
@@ -115,7 +140,6 @@ export class CardHandler {
       defender.onKill();
     }
     attacker.remainingAttacks--;
-    this.resetState();
     attacker.onAttack();
     defender.onBeingAttacked();
   }
@@ -136,6 +160,10 @@ export class CardHandler {
     card.owner.field.cards.splice(card.owner.field.cards.indexOf(card), 1);
     card.slot!.card = null;
     card.remainingHealth = card.maxHealth;
+  }
+
+  removeCardFromGraveyard(card: Card) {
+    card.owner.graveyard.cards.splice(card.owner.graveyard.cards.indexOf(card), 1);
   }
 
   addCardToField(card: Card) {
@@ -161,11 +189,28 @@ export class CardHandler {
   sendCardFromFieldToGraveyard(card: Card) {
     this.removeCardFromField(card);
     this.addCardToGraveyard(card);
+    card.onRemoveFromField();
   }
 
   sendCardFromHandToGraveyard(card: Card) {
     this.removeCardFromHand(card);
     this.addCardToGraveyard(card);
+    card.onRemoveFromHand();
+  }
+
+  addCardFromGraveyardToField(card: Card) {
+    this.removeCardFromGraveyard(card);
+    this.addCardToField(card);
+    card.onRemoveFromGraveyard();
+    this.setActiveCard(card);
+    if (card.type === CardType.UNIT) {
+      this.gamestateHandler.setGamestate(GamestateType.SUMMON);
+      this.setActiveCardAction(CardAction.SUMMON);
+    }
+    else {
+      this.gamestateHandler.setGamestate(GamestateType.PLACE);
+      this.setActiveCardAction(CardAction.PLACE);
+    }
   }
 
   showCardSummonOptions(card: Card) {
@@ -192,20 +237,39 @@ export class CardHandler {
   }
 
   attackDirectly(card: Card): void {
+    this.resetState();
     this.playerHandler.damagePlayer(this.playerHandler.getEnemyPlayer(), card.attack);
     card.remainingAttacks--;
-    this.resetState();
     card.onAttack();
     card.onDirectAttack();
   }
 
   canActivateCard(card: Card): boolean {
-    return card.canActivate() && this.canPayActivationCosts(card) && card.remainingUses >= 1;
+    return this.gamephaseHandler.isValidGamePhase([GamephaseType.MAIN]) &&
+      card.canActivate() && this.canPayActivationCosts(card) && card.remainingUses >= 1;
+  }
+
+  canPayActivationCosts(card: Card): boolean {
+    return card.type === CardType.SPELL ? this.canPayElementCosts(card) : true;
   }
 
   canSummonCard(card: Card): boolean {
-   return card.location === CardLocation.HAND &&
+   return card.location === CardLocation.HAND && card.canSummon() &&
      this.gamephaseHandler.isValidGamePhase([GamephaseType.MAIN]) && this.canPayElementCosts(card);
+  }
+
+  canPlaceCard(card: Card): boolean {
+    return card.location === CardLocation.HAND && card.canPlace() &&
+      this.gamephaseHandler.isValidGamePhase([GamephaseType.MAIN]) && this.canPayElementCosts(card);
+  }
+
+  canDiscardCard(card: Card): boolean {
+    return card.location === CardLocation.HAND;
+  }
+
+  canAttack(card: Card): boolean {
+    return card.type === CardType.UNIT && card.remainingAttacks >= 1 && card.location === CardLocation.FIELD &&
+      this.gamephaseHandler.isValidGamePhase([GamephaseType.COMBAT]);
   }
 
   canPayElementCosts(card: Card): boolean {
@@ -218,30 +282,19 @@ export class CardHandler {
     return true;
   }
 
-  canPayActivationCosts(card: Card): boolean {
-    if (card.type === CardType.SPELL) {
-      return this.canPayElementCosts(card);
-    } else {
-      return card.canPayActivationCosts();
-    }
-  }
-
-  canPlaceCard(card: Card): boolean {
-    return this.canSummonCard(card);
-  }
-
-  canDiscardCard(card: Card): boolean {
-    return card.location === CardLocation.HAND;
-  }
-
-  canAttack(card: Card): boolean {
-    return card.type === CardType.UNIT && card.remainingAttacks >= 1 && card.location === CardLocation.FIELD &&
-      this.gamephaseHandler.isValidGamePhase([GamephaseType.COMBAT]);
-  }
-
   gainElement(player: Player, element: Element): void {
     let tempElement: Element = this.playerHandler.getElement(player, element.type);
     tempElement ? tempElement.amount += element.amount : player.elementals.push(element);
+  }
+
+  loseElement(player: Player, element: Element): void {
+    let tempElement: Element = this.playerHandler.getElement(player, element.type);
+    if (tempElement) {
+      tempElement.amount -= element.amount
+      if (tempElement.amount === 0) {
+        player.elementals.splice(player.elementals.indexOf(element), 1);
+      }
+    }
   }
 
   payElementCosts(card: Card): void {
@@ -252,6 +305,15 @@ export class CardHandler {
         card.owner.elementals.splice(card.owner.elementals.indexOf(element), 1);
       }
     }
+  }
+
+  getCombinedElementCosts(card: Card): number {
+    //TODO
+    let amount: number = 0;
+    for (let i = 0; i < card.elementCosts.length; i++) {
+      amount += this.playerHandler.getElement(card.owner, card.elementCosts[i].type).amount;
+    }
+    return amount;
   }
 
   drawCards(player: Player, amount: number): void {

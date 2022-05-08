@@ -1,4 +1,6 @@
 <div class="width-100per height-100per background-shadow align-items justify-content flex">
+  <i class="fa fa-crosshairs fa-3x padding-05em absolute z-index-2 color-white top-0 right-0"
+     *ngIf="canExitSearchView()" (click)="resetState()"></i>
   <div class="width-100per-neg15em height-100per-neg15em flex-wrap align-content-start z-index-1 overflow-x-hidden
     overflow-y-auto padding-3em">
     <ng-container *ngFor="let card of getCards()">
