@@ -4,6 +4,5 @@ export enum GamestateType {
   PLACE = 'Place',
   SUMMON = 'Summon',
   ATTACK = 'Attack',
-  SEARCH = 'Search',
-  SELECT = 'Select'
+  SEARCH = 'Search'
 }

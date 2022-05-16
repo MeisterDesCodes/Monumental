@@ -1,4 +1,4 @@
-import {Card} from "../shared/card";
+import {Card, SP} from "../shared/card";
 import {Player} from "../shared/player";
 import {Injectable} from "@angular/core";
 import {Element} from "../shared/models/element";
@@ -10,6 +10,7 @@ import {CardLocation} from "../shared/enums/card-location";
 import {GamephaseHandler} from "./gamephase-handler";
 import {GamephaseType} from "../shared/enums/gamephase-type";
 import {PlayerHandler} from "./player-handler";
+import {interval} from "rxjs";
 
 @Injectable()
 export class CardHandler {
@@ -17,23 +18,22 @@ export class CardHandler {
   selectedCard: Card | null = null;
   activeCard: Card | null = null;
   activeCardAction: CardAction | null = null;
-  activeSearchCards: Card[] | null = null;
+  activeSearchCards: Card[] = [];
   activeSearchCardsAction: CardAction | null = null;
   activeSearchCardsCount: number = 0;
-  selectedSearchCards: Card[] | null = null;
+  selectedSearchCards: Card[] = [];
 
   chain: Function[] = [];
+  chainActive: boolean = false;
+
+  chainTrigger = interval(100).subscribe(() => this.triggerChain());
 
   constructor(private gamestateHandler: GamestateHandler, private gamephaseHandler: GamephaseHandler,
               private playerHandler: PlayerHandler) {
   }
 
-  addToChain(chainFunction: Function): void {
-
-  }
-
-  setSelectedCard(card: Card | null): void {
-    this.selectedCard = card;
+  setSelectedCard(card: Card) {
+    this.getSelectedCard() !== card ? this.selectedCard = card : this.selectedCard = null;
   }
 
   getSelectedCard(): Card | null {
@@ -56,11 +56,11 @@ export class CardHandler {
     return this.activeCardAction;
   }
 
-  setActiveSearchCards(cards: Card[] | null): void {
+  setActiveSearchCards(cards: Card[]): void {
     this.activeSearchCards = cards;
   }
 
-  getActiveSearchCards(): Card[] | null {
+  getActiveSearchCards(): Card[] {
     return this.activeSearchCards;
   }
 
@@ -80,12 +80,36 @@ export class CardHandler {
     return this.activeSearchCardsCount;
   }
 
-  setSelectedSearchCards(cards: Card[] | null): void {
+  setSelectedSearchCards(cards: Card[]): void {
     this.selectedSearchCards = cards;
   }
 
-  getSelectedSearchCards(): Card[] | null {
+  getSelectedSearchCards(): Card[] {
     return this.selectedSearchCards;
+  }
+
+  setChainActive(value: boolean): void {
+    this.chainActive = value;
+  }
+
+  getChainActive(): boolean {
+    return this.chainActive;
+  }
+
+  triggerChain(): void {
+    if (this.chain.length >= 1 && !this.getChainActive()) {
+      this.setChainActive(true);
+      this.chain.pop()!();
+    }
+  }
+
+  continueOrBreakChain() {
+    if (SP.getCardHandler().chain.length >= 1) {
+      this.chain.pop()!();
+    }
+    else {
+      this.setChainActive(false);
+    }
   }
 
   resetState(): void {
@@ -105,7 +129,9 @@ export class CardHandler {
   }
 
   placeOrSummonCard(card: Card) {
-    this.removeCardFromHand(card);
+    if (card.location === CardLocation.HAND) {
+      this.removeCardFromHand(card);
+    }
     this.addCardToField(card);
   }
 
@@ -123,6 +149,11 @@ export class CardHandler {
   discardCard(card: Card) {
     this.sendCardFromHandToGraveyard(card);
     card.onDiscard();
+  }
+
+  millCard(card: Card) {
+    this.sendCardFromDeckToGraveyard(card);
+    card.onMill();
   }
 
   attackUnit(attacker: Card, defender: Card) {
@@ -159,7 +190,8 @@ export class CardHandler {
   removeCardFromField(card: Card) {
     card.owner.field.cards.splice(card.owner.field.cards.indexOf(card), 1);
     card.slot!.card = null;
-    card.remainingHealth = card.maxHealth;
+    card.attack = card.originalAttack;
+    card.remainingHealth = card.originalHealth;
   }
 
   removeCardFromGraveyard(card: Card) {
@@ -186,6 +218,11 @@ export class CardHandler {
     this.addCardToHand(card);
   }
 
+  addCardFromGraveyardToHand(card: Card) {
+    this.removeCardFromGraveyard(card);
+    this.addCardToHand(card);
+  }
+
   sendCardFromFieldToGraveyard(card: Card) {
     this.removeCardFromField(card);
     this.addCardToGraveyard(card);
@@ -198,10 +235,25 @@ export class CardHandler {
     card.onRemoveFromHand();
   }
 
+  sendCardFromDeckToGraveyard(card: Card) {
+    this.removeCardFromDeck(card);
+    this.addCardToGraveyard(card);
+    card.onRemoveFromDeck();
+  }
+
   addCardFromGraveyardToField(card: Card) {
     this.removeCardFromGraveyard(card);
-    this.addCardToField(card);
     card.onRemoveFromGraveyard();
+    this.summonOrPlaceCardOnField(card);
+  }
+
+  addCardFromHandToField(card: Card) {
+    this.removeCardFromHand(card);
+    card.onRemoveFromHand();
+    this.summonOrPlaceCardOnField(card);
+  }
+
+  summonOrPlaceCardOnField(card: Card): void {
     this.setActiveCard(card);
     if (card.type === CardType.UNIT) {
       this.gamestateHandler.setGamestate(GamestateType.SUMMON);
@@ -245,8 +297,8 @@ export class CardHandler {
   }
 
   canActivateCard(card: Card): boolean {
-    return this.gamephaseHandler.isValidGamePhase([GamephaseType.MAIN]) &&
-      card.canActivate() && this.canPayActivationCosts(card) && card.remainingUses >= 1;
+    return card.canActivate() && this.canPayActivationCosts(card) &&
+      card.remainingUses >= 1 && this.gamephaseHandler.isValidGamePhase([GamephaseType.MAIN]);
   }
 
   canPayActivationCosts(card: Card): boolean {
@@ -264,7 +316,8 @@ export class CardHandler {
   }
 
   canDiscardCard(card: Card): boolean {
-    return card.location === CardLocation.HAND;
+    return card.location === CardLocation.HAND && card.canDiscard() &&
+      this.gamephaseHandler.isValidGamePhase([GamephaseType.MAIN]);
   }
 
   canAttack(card: Card): boolean {
@@ -274,8 +327,8 @@ export class CardHandler {
 
   canPayElementCosts(card: Card): boolean {
     for (let i = 0; i < card.elementCosts.length; i++) {
-      let element: Element = this.playerHandler.getElement(card.owner, card.elementCosts[i].type);
-      if (!element || element.amount < card.elementCosts[i].amount) {
+      let elementAmount: number = this.playerHandler.getElementAmount(card.owner, card.elementCosts[i].type);
+      if (elementAmount < card.elementCosts[i].amount) {
         return false;
       }
     }
@@ -311,22 +364,26 @@ export class CardHandler {
     //TODO
     let amount: number = 0;
     for (let i = 0; i < card.elementCosts.length; i++) {
-      amount += this.playerHandler.getElement(card.owner, card.elementCosts[i].type).amount;
+      amount += this.playerHandler.getElementAmount(card.owner, card.elementCosts[i].type);
     }
     return amount;
   }
 
   drawCards(player: Player, amount: number): void {
-    if (player.deck.cards.length >= amount) {
-      for (let i = 0; i < amount; i++) {
-        let card = player.deck.cards.pop()!;
-        player.hand.cards.push(card);
-        card.location = CardLocation.HAND;
-      }
-    }
-    else {
-      //TODO
-    }
+    this.chain.push(
+      () => {
+        if (player.deck.cards.length >= amount) {
+          for (let i = 0; i < amount; i++) {
+            let card = player.deck.cards.pop()!;
+            player.hand.cards.push(card);
+            card.location = CardLocation.HAND;
+            this.continueOrBreakChain();
+          }
+        }
+        else {
+          //TODO
+        }
+      });
   }
 
   resetCards(player: Player): void {

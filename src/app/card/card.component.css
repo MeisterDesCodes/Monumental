@@ -11,9 +11,13 @@
 
 .game-card-stat-wrapper {
   width: 25%;
-  color: #414040;
+  color: #605d5d;
   background: url("src/assets/images/backgrounds/border-background.jpg");
   box-shadow: 0 0 10px 1px black;
   display: flex;
   z-index: 1;
+}
+
+.game-card-facedown {
+  background: url("../../assets/images/backgrounds/card-background.jpg");
 }

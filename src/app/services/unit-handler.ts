@@ -2,6 +2,7 @@ import {Injectable} from "@angular/core";
 import {Card} from "../shared/card";
 import {CardHandler} from "./card-handler";
 import {PlayerHandler} from "./player-handler";
+import {Archetype} from "../shared/enums/archetype";
 
 @Injectable()
 export class UnitHandler {
@@ -26,5 +27,32 @@ export class UnitHandler {
     if (card.remainingHealth > card.maxHealth) {
       card.remainingHealth = card.maxHealth;
     }
+  }
+
+  modifyUnitStats(card: Card, attackAmount: number, healthAmount: number): void {
+    card.attack += attackAmount;
+    card.maxHealth += healthAmount;
+    card.remainingHealth += healthAmount;
+  }
+
+  modifyUnitsStatsByArchetype(attackAmount: number, healthAmount: number, archetype: Archetype): void {
+    this.playerHandler.getUnits().forEach(unit => {
+      if (unit.archetype === archetype) {
+        unit.attack += attackAmount;
+        unit.maxHealth += healthAmount;
+        unit.remainingHealth += healthAmount;
+      }
+    });
+  }
+
+  modifyOtherUnitsStatsByArchetype(attackAmount: number, healthAmount: number, archetype: Archetype,
+                                   cardToExclude: Card): void {
+    this.playerHandler.getOtherUnits(cardToExclude).forEach(unit => {
+      if (unit.archetype === archetype) {
+        unit.attack += attackAmount;
+        unit.maxHealth += healthAmount;
+        unit.remainingHealth += healthAmount;
+      }
+    });
   }
 }

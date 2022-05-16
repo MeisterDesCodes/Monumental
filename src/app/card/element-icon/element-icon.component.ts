@@ -12,7 +12,7 @@ export class ElementIconComponent {
   @Input() element!: Element;
 
   elementals: ElementType[] = [ElementType.WOOD, ElementType.FIRE, ElementType.OCEAN, ElementType.STORM,
-    ElementType.SHADOW, ElementType.DAWN];
+    ElementType.DAWN, ElementType.SHADOW];
 
   constructor() { }
 }

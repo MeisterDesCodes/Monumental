@@ -7,6 +7,7 @@ import {CardAction} from "../../shared/enums/card-action";
 import {CardType} from "../../shared/enums/card-type";
 import {Player} from "../../shared/player";
 import {PlayerHandler} from "../../services/player-handler";
+import {CardLocation} from "../../shared/enums/card-location";
 
 @Component({
   selector: 'app-card-slot',
@@ -29,17 +30,21 @@ export class CardSlotComponent {
       switch (activeCardAction) {
         case CardAction.SUMMON:
           if (this.canSummonCard()) {
+            if (activeCard.location === CardLocation.HAND) {
+              this.cardHandler.payElementCosts(activeCard);
+            }
             this.cardHandler.resetState();
             this.cardHandler.summonCard(activeCard);
-            this.cardHandler.payElementCosts(activeCard);
             this.setCard(activeCard);
           }
           break;
         case CardAction.PLACE:
           if (this.canPlaceCard()) {
+            if (activeCard.location === CardLocation.HAND) {
+              this.cardHandler.payElementCosts(activeCard);
+            }
             this.cardHandler.resetState();
             this.cardHandler.placeCard(activeCard);
-            this.cardHandler.payElementCosts(activeCard);
             this.setCard(activeCard);
           }
           break;
@@ -52,8 +57,16 @@ export class CardSlotComponent {
     }
   }
 
-  isUsable(): boolean {
-    return this.canSummonCard() || this.canPlaceCard();
+  update(): void {
+    let elements: NodeListOf<Element> = document.querySelectorAll('.game-card-slot');
+    elements.forEach(element => {
+      if (element.classList.contains('usable') || element.classList.contains('attackable')) {
+        element.parentElement!.classList.add('z-index-2');
+      }
+      else {
+        element.parentElement!.classList.remove('z-index-2');
+      }
+    });
   }
 
   canSummonCard(): boolean {
@@ -70,6 +83,10 @@ export class CardSlotComponent {
       this.rowType === this.cardHandler.getActiveCard()!.type;
   }
 
+  isUsable(): boolean {
+    return this.canSummonCard() || this.canPlaceCard();
+  }
+
   isAttackable(): boolean {
     return this.card! && this.cardHandler.getActiveCard()! && this.card.type === CardType.UNIT &&
       this.gamestateHandler.isValidGamestate([GamestateType.ATTACK]) &&
@@ -77,8 +94,7 @@ export class CardSlotComponent {
   }
 
   setSelectedCard(card: Card) {
-    this.getSelectedCard() !== card ? this.cardHandler.setSelectedCard(card) :
-      this.cardHandler.setSelectedCard(null);
+    this.cardHandler.setSelectedCard(card);
   }
 
   getSelectedCard(): Card | null {
@@ -88,10 +104,5 @@ export class CardSlotComponent {
   setCard(card: Card): void {
     this.card = card;
     this.card.slot = this;
-  }
-
-  isSelectable(): boolean {
-    return this.card! && this.gamestateHandler.isValidGamestate([GamestateType.SELECT]) &&
-      this.cardHandler.getActiveSearchCards()!.includes(this.card);
   }
 }

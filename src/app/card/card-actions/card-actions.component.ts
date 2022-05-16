@@ -1,11 +1,13 @@
-import {Component, Input, OnInit} from '@angular/core';
+import {Component, Input} from '@angular/core';
 import {Card} from "../../shared/card";
 import {CardAction} from "../../shared/enums/card-action";
 import {CardHandler} from "../../services/card-handler";
 import {PlayerHandler} from "../../services/player-handler";
+import {CardLocation} from "../../shared/enums/card-location";
+import {SearchHandler} from "../../services/search-handler";
 
 @Component({
-  selector: 'app-hand-card-actions',
+  selector: 'app-card-actions',
   templateUrl: './card-actions.component.html',
   styleUrls: ['./card-actions.component.css']
 })
@@ -13,11 +15,20 @@ export class CardActionsComponent {
 
   @Input() card!: Card;
 
-  constructor(private gameLogic: CardHandler, private playerHandler: PlayerHandler) { }
+  constructor(private gameLogic: CardHandler, private playerHandler: PlayerHandler,
+              private searchHandler: SearchHandler) { }
 
   getPerformableActions(): CardAction[] {
     if (this.card) {
-      return this.card.cardActions.filter(cardAction => this.canPerformAction(cardAction));
+      let cardActions: CardAction[] = this.card.cardActions.filter(
+        cardAction => this.canPerformAction(cardAction));
+      if (this.card.location === CardLocation.GRAVEYARD) {
+        cardActions.push(CardAction.VIEW_GRAVEYARD);
+      }
+      if (this.card.location === CardLocation.DECK) {
+        cardActions.push(CardAction.VIEW_DECK);
+      }
+      return cardActions;
     }
     else {
       return [];
@@ -62,6 +73,12 @@ export class CardActionsComponent {
         break;
       case CardAction.ATTACK:
         this.gameLogic.showAttackOptions(card);
+        break;
+      case CardAction.VIEW_GRAVEYARD:
+        this.searchHandler.viewCards(card.owner, CardLocation.GRAVEYARD);
+        break;
+      case CardAction.VIEW_DECK:
+        this.searchHandler.viewCards(card.owner, CardLocation.DECK);
         break;
     }
   }

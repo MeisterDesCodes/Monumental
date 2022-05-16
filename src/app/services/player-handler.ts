@@ -50,6 +50,11 @@ export class PlayerHandler {
     return player.elementals.find(element => element.type === elementType)!;
   }
 
+  getElementAmount(player: Player, elementType: ElementType): number {
+    let element: Element = player.elementals.find(element => element.type === elementType)!;
+    return element ? element.amount : 0;
+  }
+
   getUnits(): Card[] {
     return this.currentPlayer.field.cards.filter(card => card.type === CardType.UNIT);
   }
@@ -58,24 +63,8 @@ export class PlayerHandler {
     return this.currentPlayer.field.cards.filter(card => card.type === CardType.UNIT && card !== cardToExclude);
   }
 
-  modifyUnitStats(attackAmount: number, healthAmount: number): void {
-    this.getUnits().forEach(unit => {
-      if (unit.archetype === Archetype.WOODLANDS) {
-        unit.attack += attackAmount;
-        unit.maxHealth += healthAmount;
-        unit.remainingHealth += healthAmount;
-      }
-    });
-  }
-
-  modifyOtherUnitStats(attackAmount: number, healthAmount: number, cardToExclude: Card): void {
-    this.getOtherUnits(cardToExclude).forEach(unit => {
-      if (unit.archetype === Archetype.WOODLANDS) {
-        unit.attack += attackAmount;
-        unit.maxHealth += healthAmount;
-        unit.remainingHealth += healthAmount;
-      }
-    });
+  getFieldCards(): Card[] {
+    return this.currentPlayer.field.cards;
   }
 
   getEnemyPlayer(): Player {
@@ -84,6 +73,10 @@ export class PlayerHandler {
 
   getEnemyUnits(): Card[] {
     return this.getEnemyPlayer().field.cards.filter(card => card.type === CardType.UNIT);
+  }
+
+  getEnemyBuildings(): Card[] {
+    return this.getEnemyPlayer().field.cards.filter(card => card.type === CardType.BUILDING);
   }
 
   damagePlayer(player: Player, amount: number): void {

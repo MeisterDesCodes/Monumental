@@ -6,5 +6,8 @@ export enum CardAction {
   DISCARD = 'Discard',
   ATTACK = 'Attack',
   DRAW = 'Draw',
-  DESTROY = 'Destroy'
+  DESTROY = 'Destroy',
+  MILL = 'Mill',
+  VIEW_DECK = 'View Deck',
+  VIEW_GRAVEYARD = 'View Graveyard'
 }

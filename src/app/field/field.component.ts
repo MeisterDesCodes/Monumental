@@ -1,6 +1,7 @@
 import {Component, Input, OnInit} from '@angular/core';
 import {CardType} from "../shared/enums/card-type";
 import {Player} from "../shared/player";
+import {CardSlotComponent} from "./card-slot/card-slot.component";
 
 @Component({
   selector: 'app-field',

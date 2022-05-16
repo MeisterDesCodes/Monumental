@@ -34,6 +34,6 @@ export class AdminPanelComponent {
   }
 
   addCard(): void {
-    this.searchHandler.drawCards(this.playerHandler.getCurrentPlayer(), CardLocation.DECK, 1);
+    this.searchHandler.drawCards(this.playerHandler.getCurrentPlayer(), CardLocation.DECK, 1, null);
   }
 }

@@ -1,6 +1,7 @@
 import {Component, Input} from '@angular/core';
 import {Player} from "../../shared/player";
 import {Card} from "../../shared/card";
+import {CardHandler} from "../../services/card-handler";
 
 @Component({
   selector: 'app-graveyard',
@@ -11,7 +12,15 @@ export class GraveyardComponent {
 
   @Input() player!: Player;
 
-  constructor() {
+  constructor(private cardHandler: CardHandler) {
+  }
+
+  setSelectedCard(card: Card) {
+    this.cardHandler.setSelectedCard(card);
+  }
+
+  getSelectedCard(): Card | null {
+    return this.cardHandler.getSelectedCard();
   }
 
   isGraveyardEmpty(): boolean {

@@ -11,7 +11,7 @@ export class Player {
 
   name: string = '';
   hero: Hero = new Hero();
-  maxHealth: number = 40;
+  maxHealth: number = 60;
   remainingHealth = this.maxHealth;
   elementals: Element[] = [];
 

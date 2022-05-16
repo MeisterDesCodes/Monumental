@@ -1,1 +1,6 @@
-<div class="height-100per" [ngClass]="{'slot-border': isDeckEmpty(), 'deck-card': !isDeckEmpty()}"></div>
+<div class="deck-card" *ngIf="!isDeckEmpty()"></div>
+<div class="height-100per" [ngClass]="{'slot-border': isDeckEmpty()}">
+  <app-card (click)="setSelectedCard(getTopDeckCard())" class="font-size-0375em" *ngIf="!isDeckEmpty()"
+            [ngClass]="{'selected': getTopDeckCard() === getSelectedCard()}" [card]="getTopDeckCard()">
+  </app-card>
+</div>

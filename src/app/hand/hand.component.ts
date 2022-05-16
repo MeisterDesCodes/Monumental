@@ -15,8 +15,7 @@ export class HandComponent {
   constructor(private cardHandler: CardHandler) { }
 
   setSelectedCard(card: Card) {
-    this.getSelectedCard() !== card ? this.cardHandler.setSelectedCard(card) :
-      this.cardHandler.setSelectedCard(null);
+    this.cardHandler.setSelectedCard(card);
   }
 
   getSelectedCard(): Card | null {

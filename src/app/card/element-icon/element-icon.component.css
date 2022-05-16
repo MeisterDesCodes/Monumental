@@ -1,9 +1,9 @@
 .element-image {
   width: 2em;
   height: 2em;
-  color: #414040;
+  color: #605d5d;
   background: url("src/assets/images/backgrounds/border-background.jpg");
-  border: solid 0.1em #414040;
+  border: solid 0.1em #605d5d;
   border-radius: 10em;
   align-items: center;
   justify-content: center;

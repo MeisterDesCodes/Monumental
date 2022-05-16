@@ -8,6 +8,8 @@ html, body {
 body {
   background: url("assets/images/backgrounds/game-background.jpg");
   background-size: cover;
+  font-family: Papyrus, fantasy;
+  font-size: 16px;
 }
 
 
@@ -58,8 +60,8 @@ body {
 .padding-1em {
   padding: 1em;
 }
-.padding-3em {
-  padding: 3em;
+.padding-2em {
+  padding: 2em;
 }
 
 .padding-bottom-2em {
@@ -82,6 +84,9 @@ body {
 
 .top-neg4em {
   top: -4em;
+}
+.top-neg4rem {
+  top: -4rem;
 }
 .top-neg5em {
   top: -5em;
@@ -180,6 +185,9 @@ body {
 .width-40per {
   width: 40%;
 }
+.width-70per {
+  width: 70%;
+}
 .width-75per {
   width: 75%;
 }
@@ -196,6 +204,9 @@ body {
 }
 .height-3em {
   height: 3em;
+}
+.height-3rem {
+  height: 3rem;
 }
 .height-305em {
   height: 3.5em;
@@ -227,8 +238,8 @@ body {
 .height-20em {
   height: 20em;
 }
-.height-100per-neg15em {
-  height: calc(100% - 15em);
+.height-100per-neg10em {
+  height: calc(100% - 10em);
 }
 
 .height-10per {
@@ -336,6 +347,16 @@ body {
 .color-white {
   color: #fff;
 }
+.color-orange {
+  color: #d64710;
+}
+.color-green {
+  color: #5fdd19;
+}
+
+.fill-gray {
+  fill: #605d5d;
+}
 
 .font-size-0375em {
   font-size: 0.375em;
@@ -350,7 +371,7 @@ body {
   font-size: 2em;
 }
 .font-size-105em {
-  font-size: 1.5rem;
+  font-size: 1.5em;
 }
 .font-size-200per {
   font-size: 200%;
@@ -396,6 +417,9 @@ body {
   object-fit: cover;
 }
 
+.overflow-hidden {
+  overflow: hidden;
+}
 .overflow-x-hidden {
   overflow-x: hidden;
 }
@@ -416,7 +440,7 @@ body {
 
 .app-card {
   width: 10em;
-  height: 14em;
+  height: 15em;
   padding: 0.5em;
   transition: 200ms ease-in-out;
 }
@@ -431,6 +455,11 @@ body {
   z-index: 1;
 }
 
+.app-card-detail:hover {
+  transform: scale(1) !important;
+  z-index: 0 !important;
+}
+
 .z-index-1 {
   z-index: 1;
 }
@@ -441,4 +470,23 @@ body {
 .js-tilt-glare {
   border-radius: 1em;
   display: flex;
+}
+
+.action-button {
+  width: 6em;
+  height: 100%;
+  font-weight: bold;
+  color: #fff;
+  background: url("src/assets/images/backgrounds/card-background.jpg");
+  background-size: cover;
+  border: 0.25em solid #391607;
+  border-radius: 1em;
+  align-items: center;
+  justify-content: center;
+  display: flex;
+  transition: 200ms ease-in-out;
+}
+
+.action-button:hover {
+  transform: scale(1.2);
 }

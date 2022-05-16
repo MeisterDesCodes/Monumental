@@ -1,5 +1,6 @@
-<app-hand-card-actions class="relative" [card]="card" *ngIf="card === getSelectedCard()"></app-hand-card-actions>
-<div class="game-card" data-tilt data-tilt-glare="true" data-tilt-max-glare="0.3">
+<app-card-actions class="relative" [card]="card" *ngIf="card === getSelectedCard() && !isDetail"></app-card-actions>
+<div class="game-card-facedown"></div>
+<div class="game-card" data-tilt data-tilt-glare="true" data-tilt-max-glare="0.3" (mouseenter)="setCurrentCard()">
   <div class="height-10per border-bottom-image-025em bold align-items justify-content flex">
     <span class="flex padding-05em color-white">
       {{card.name}}
@@ -22,23 +23,43 @@
     </span>
   </div>
   <div class="height-25per">
-    <span class="flex padding-05em color-white">
+    <span class="flex padding-05em color-white overflow-hidden;
+">
       {{card.description}}
     </span>
   </div>
   <ng-container *ngIf="isUnit(card)">
     <div class="height-1605per flex">
       <div class="game-card-stat-wrapper border-radius-top-right align-items justify-content flex">
-        <i class="fa fa-bolt font-size-105em padding-05em"></i>
+        <svg class="fill-gray font-size-075em padding-05em" viewBox="0 0 752 752">
+          <path xmlns="http://www.w3.org/2000/svg" d="m540.33 259.96c0.93359-0.93359 1.6484-2.082
+          2.0078-3.3711l21.812-79.434c0.64453-2.4414 0-5.0234-1.793-6.8867-1.7227-1.793-4.3789-2.582-6.8164-1.9375l-81.586
+          19.66c-1.3633 0.28516-2.582 1.0039-3.5156 2.082l-84.598 91.273 60.703 65.512z"/>
+          <path xmlns="http://www.w3.org/2000/svg" d="m285.31 389.84 29.633 19.445c2.8711 2.082 4.8086 4.0898 6.2422 6.3867l19.301 29.492 25.043-23.176-59.199-54.82z"/>
+          <path xmlns="http://www.w3.org/2000/svg" d="m309.06 423.34c-0.50391-0.78906-1.2188-1.5078-2.0078-2.082l-73.836-48.363c-2.7969-1.793-6.6016-1.4336-8.9688 0.93359l-25.402 25.402c-1.3633 1.3633-2.082 3.1562-2.082 5.0938 0 1.8672 0.71875 3.7305 2.082 5.0234l122.12 122.12c1.4336 1.4336 3.2305 2.1523 5.0938 2.1523 1.8672 0 3.6602-0.71875 5.0938-2.1523l25.328-25.328c2.4414-2.4414 2.7969-6.1719 0.93359-9.043z"/>
+          <path xmlns="http://www.w3.org/2000/svg" d="m191.17 497.9c21.098 3.5156 37.816 20.164 41.332 41.258l41.906-34.012-49.223-49.223z"/>
+          <path xmlns="http://www.w3.org/2000/svg" d="m182.7 511.46c-20.277 0-36.309 16.402-36.309 36.234 0 19.926 16.125 36.234 36.309 36.234 19.961 0 36.234-16.195 36.234-36.234 0-19.395-15.594-36.234-36.234-36.234z"/>
+          <path xmlns="http://www.w3.org/2000/svg" d="m209.75 256.59c0.35938 1.293 1.0039 2.4414 2.0078 3.3711l199.77 185.13 19.445-29.633c2.0078-2.8711 3.9453-4.6641 6.0977-6.0977l29.707-19.516-185.13-199.77c-0.93359-1.0039-2.2227-1.793-3.5859-2.082l-81.586-19.734c-2.4414-0.57422-5.0234 0.14453-6.8164 2.0078-1.793 1.793-2.4414 4.4492-1.793 6.8867z"/>
+          <path xmlns="http://www.w3.org/2000/svg" d="m560.85 497.9-34.012-41.977-49.223 49.223 41.906 34.012c1.7227-10.262 6.6719-19.805 14.062-27.195 7.5352-7.5312 16.934-12.414 27.266-14.062z"/>
+          <path xmlns="http://www.w3.org/2000/svg" d="m555.32 404.33c0-1.9375-0.78906-3.7305-2.1523-5.0938l-25.328-25.402c-2.4414-2.3672-6.1719-2.7969-9.043-0.93359l-73.766 48.363c-0.85938 0.57422-1.5078 1.293-2.082 2.082l-48.363 73.766c-1.8672 2.8711-1.4336 6.6016 0.93359 9.043l25.402 25.328c1.3633 1.4336 3.2305 2.1523 5.0234 2.1523 1.8672 0 3.7305-0.71875 5.0938-2.1523l122.12-122.12c1.3672-1.2969 2.1562-3.1641 2.1562-5.0273z"/>
+          <path xmlns="http://www.w3.org/2000/svg" d="m595 522.08c-6.8164-6.8867-15.93-10.621-25.617-10.621s-18.801 3.7305-25.688 10.621c-7.0312 7.0312-10.621 16.359-10.621 25.617 0 9.2578 3.5859 18.586 10.621 25.617 7.1055 7.1055 16.359 10.621 25.688 10.621 9.2578 0 18.586-3.5156 25.617-10.621 14.137-14.137 14.137-37.098 0-51.234z"/>
+        </svg>
         <div class="absolute margin-left-105em">
-          <span class="absolute color-white font-size-200per bold">{{card.attack}}</span>
+          <span [ngClass]="{'color-green': isHigherAttack(), 'color-orange': isLowerAttack()}"
+                class="absolute color-white font-size-200per bold">{{card.attack}}</span>
         </div>
       </div>
       <div class="flex-grow"></div>
       <div class="game-card-stat-wrapper border-radius-top-left align-items justify-content flex">
-        <i class="fa fa-heart font-size-105em padding-05em"></i>
+        <svg class="fill-gray font-size-105em padding-05em" viewBox="0 0 512 512">
+          <path d="M256.3-.0068C261.9-.0507 267.3 1.386 272.1 4.066L476.5 90.53C487.7 95.27 495.2 105.1 495.9 118.1C501.6 213.6 466.7
+          421.9 272.5 507.7C267.6 510.5 261.1 512.1 256.3 512C250.5 512.1 244.9 510.5 239.1 507.7C45.8 421.9 10.95 213.6 16.57 118.1C17.28
+          105.1 24.83 95.27 36.04 90.53L240.4 4.066C245.2 1.386 250.7-.0507 256.3-.0068H256.3zM266.1 363.4L364.2 263.6C392.2 234.7 390.5
+          186.6 358.1 159.5C331.8 135.8 291.5 140.2 266.1 166.5L256.4 176.1L245.9 166.5C221.4 140.2 180.2 135.8 153 159.5C121.5 186.6 119.8
+          234.7 147.8 263.6L244.2 363.4C251.2 369.5 260.8 369.5 266.1 363.4V363.4z"/></svg>
         <div class="absolute margin-left-105em">
-          <span class="absolute color-white font-size-200per bold">{{card.remainingHealth}}</span>
+          <span [ngClass]="{'color-green': isHigherHealth(), 'color-orange': isLowerHealth()}"
+                class="absolute color-white font-size-200per bold">{{card.remainingHealth}}</span>
         </div>
       </div>
     </div>

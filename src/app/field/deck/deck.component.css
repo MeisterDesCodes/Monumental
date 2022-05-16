@@ -1,7 +1,11 @@
 .deck-card {
+  position: absolute;
+  height: inherit;
+  width: inherit;
   background: url("src/assets/images/backgrounds/card-background.jpg");
   background-size: cover;
   border: solid #391607 0.1em;
   border-radius: 0.5em;
-  box-shadow: 0 0 1em 0.1875em #000;
+  z-index: 1;
+  pointer-events: none;
 }
