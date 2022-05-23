@@ -1,4 +1,4 @@
-<div class="height-100per" [ngClass]="{'slot-border': isGraveyardEmpty()}">
+<div class="absolute width-inherit height-inherit" [ngClass]="{'slot-border': isGraveyardEmpty()}">
   <app-card (click)="setSelectedCard(getLastGraveyardCard())" class="font-size-0375em" *ngIf="!isGraveyardEmpty()"
             [ngClass]="{'selected': getLastGraveyardCard() === getSelectedCard()}" [card]="getLastGraveyardCard()">
   </app-card>

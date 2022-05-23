@@ -30,7 +30,6 @@ import {SearchViewComponent} from './search-view/search-view.component';
 import {SearchHandler} from "./services/search-handler";
 import {MatGridListModule} from '@angular/material/grid-list';
 import {MusicHandler} from "./services/music-handler";
-import {TestDeck2} from "../assets/decks/test-deck-2";
 import {DetailViewComponent} from './detail-view/detail-view.component';
 import {DetailsHandler} from "./services/details-handler";
 
@@ -68,7 +67,6 @@ export let serviceInjector: Injector;
     Player,
     PlayerHandler,
     GamestateHandler,
-    TestDeck,
     GamephaseHandler,
     PhasesComponent,
     UnitHandler,
@@ -76,7 +74,6 @@ export let serviceInjector: Injector;
     SearchViewComponent,
     MusicHandler,
     CardSlotComponent,
-    TestDeck2,
     DetailsHandler
   ],
   bootstrap: [AppComponent]

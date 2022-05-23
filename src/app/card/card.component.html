@@ -1,19 +1,23 @@
-<app-card-actions class="relative" [card]="card" *ngIf="card === getSelectedCard() && !isDetail"></app-card-actions>
+<app-card-actions class="relative" [card]="card" *ngIf="showCardActions()"></app-card-actions>
 <div class="game-card-facedown"></div>
-<div class="game-card" data-tilt data-tilt-glare="true" data-tilt-max-glare="0.3" (mouseenter)="setCurrentCard()">
+<div class="game-card" data-tilt data-tilt-glare="true" data-tilt-max-glare="0.3"
+     [ngClass]="{'unit-background': isUnit(), 'building-background': isBuilding(), 'spell-background': isSpell(),
+     'monument-background': isMonument()}"
+     (mouseenter)="setCurrentCard()">
   <div class="height-10per border-bottom-image-025em bold align-items justify-content flex">
     <span class="flex padding-05em color-white">
       {{card.name}}
     </span>
   </div>
   <div class="flex height-35per border-bottom-image-025em">
-    <div class="width-20per">
+    <div class="width-20per align-items flex-column">
       <ng-container *ngFor="let element of card.elementCosts">
-        <app-element-icon [element]="element" class="inline-block width-100per height-205em"></app-element-icon>
+        <app-element-icon [element]="element" class="inline-block width-2em height-2em padding-015em">
+        </app-element-icon>
       </ng-container>
     </div>
     <div class="width-80per border-left-image-025em">
-      <img class="width-100per height-100per" src="../../assets/images/cards/{{card.archetype}}/{{card.imagePath}}.jpg"
+      <img class="width-height-100per" src="../../assets/images/cards/{{card.archetype}}/{{card.imagePath}}.jpg"
            alt="image">
     </div>
   </div>
@@ -23,12 +27,11 @@
     </span>
   </div>
   <div class="height-25per">
-    <span class="flex padding-05em color-white overflow-hidden;
-">
+    <span class="font-size-75per flex padding-05em color-white overflow-hidden">
       {{card.description}}
     </span>
   </div>
-  <ng-container *ngIf="isUnit(card)">
+  <ng-container *ngIf="isUnit()">
     <div class="height-1605per flex">
       <div class="game-card-stat-wrapper border-radius-top-right align-items justify-content flex">
         <svg class="fill-gray font-size-075em padding-05em" viewBox="0 0 752 752">

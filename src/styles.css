@@ -38,6 +38,11 @@ body {
   display: flex;
   flex-wrap: wrap;
 }
+.flex-center {
+  align-items: center;
+  justify-content: center;
+  display: flex;
+}
 
 .absolute {
   position: absolute;
@@ -54,6 +59,9 @@ body {
   position: fixed;
 }
 
+.padding-015em {
+  padding: 0.15em;
+}
 .padding-05em {
   padding: 0.5em;
 }
@@ -76,6 +84,10 @@ body {
 
 .padding-top-5em {
   padding-top: 5em;
+}
+
+.padding-left-right-05em {
+  padding: 0 0.5em 0 0.5em;;
 }
 
 .margin-05em {
@@ -129,8 +141,14 @@ body {
 }
 
 
+.width-inherit {
+  width: inherit;
+}
 .width-1em {
   width: 1em;
+}
+.width-2em {
+  width: 2em;
 }
 .width-4em {
   width: 4em;
@@ -198,7 +216,9 @@ body {
   width: 100%;
 }
 
-
+.height-inherit {
+  height: inherit;
+}
 .height-205em {
   height: 2.5em;
 }
@@ -287,10 +307,17 @@ body {
 .height-80per {
   height: 80%;
 }
+.height-90per {
+  height: 90%;
+}
 .height-100per {
   height: 100%;
 }
 
+.width-height-100per {
+  width: 100%;
+  height: 100%;
+}
 
 .max-width-100 {
   max-width: 100%;
@@ -304,27 +331,30 @@ body {
   border-radius: 100em
 }
 .border-radius-top-right {
-  border-radius: 0 2em 0 0.5em;
+  border-radius: 0 2em 0 0.75em;
 }
 .border-radius-top-left {
   border-radius: 2em 0 0.5em 0;
 }
 
+.no-border {
+  border: none;
+}
+.border-brown-015em {
+  border: 0.15em solid #391607;
+}
 .border-image-025em {
   border: solid black 0.25em;
   border-image: url("src/assets/images/backgrounds/border-background.jpg") 30 30 round;
 }
-
 .border-bottom-image-025em {
   border-bottom: solid black 0.25em;
   border-image: url("src/assets/images/backgrounds/border-background.jpg") 30 30 round;
 }
-
 .border-bottom-image-025em {
   border-bottom: solid black 0.25em;
   border-image: url("src/assets/images/backgrounds/border-background.jpg") 30 30 round;
 }
-
 .border-left-image-025em {
   border-left: solid black 0.3em;
   border-image: url("src/assets/images/backgrounds/border-background.jpg") 30 30 round;
@@ -343,6 +373,12 @@ body {
 .background-shadow {
   background: rgba(0, 0, 0, 0.8);
 }
+.background-gray {
+  background: #605d5d;
+}
+.background-transparent {
+  background: transparent;
+}
 
 .color-white {
   color: #fff;
@@ -357,6 +393,14 @@ body {
 .fill-gray {
   fill: #605d5d;
 }
+.fill-white {
+  fill: #fff;
+}
+
+
+.font-papyrus {
+  font-family: Papyrus, fantasy;
+}
 
 .font-size-0375em {
   font-size: 0.375em;
@@ -370,8 +414,14 @@ body {
 .font-size-2em {
   font-size: 2em;
 }
+.font-size-3em {
+  font-size: 3em;
+}
 .font-size-105em {
   font-size: 1.5em;
+}
+.font-size-75per {
+  font-size: 75%;
 }
 .font-size-200per {
   font-size: 200%;
@@ -387,6 +437,9 @@ body {
 }
 .margin-top-9em {
   margin-top: 9em;
+}
+.margin-top-6em {
+  margin-top: 6em;
 }
 
 .margin-left-1em {
@@ -408,10 +461,13 @@ body {
   margin-left: 10em;
 }
 
-.margin-bottom-05em {
-  margin-bottom: 0.5em;
+.margin-left-30per {
+  margin-left: 30%;
 }
 
+.margin-bottom-1025em {
+  margin-bottom: 1.25em;
+}
 
 .object-fit {
   object-fit: cover;
@@ -489,4 +545,20 @@ body {
 
 .action-button:hover {
   transform: scale(1.2);
+}
+
+.hover-grow-102:hover {
+  fill: #fff;
+  transform: scale(1.2);
+  transition: 200ms ease-in-out;
+}
+
+@keyframes usable-animation {
+  0%   {border:0.1em solid green; transform:scale(1)}
+  100% {border:0.1em solid transparent; transform:scale(1.2)}
+}
+
+@keyframes attackable-animation {
+  0%   {border:0.1em solid red; transform:scale(1)}
+  100% {border:0.1em solid transparent; transform:scale(1.2)}
 }

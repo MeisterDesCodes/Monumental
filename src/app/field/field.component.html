@@ -1,23 +1,31 @@
 <div class="width-100per align-items flex-column padding-top-5em">
   <div class="flex height-8em" *ngIf="order === 0">
-    <app-card-slot [player]="player" [rowType]="rowTypes[0]"
-                   *ngFor="let temp of [].constructor(rowSize)" class="app-card-slot width-5em height-7em padding-05em">
+    <app-card-slot [player]="player" [rowType]="rowTypes[2]" class="width-5em height-7em padding-05em flex-center">
     </app-card-slot>
-    <div class="width-5em"></div>
-    <app-graveyard class="width-5em height-7em padding-05em" [player]="player"></app-graveyard>
+    <div class="width-6em"></div>
+    <app-card-slot [player]="player" [rowType]="rowTypes[0]"
+                   *ngFor="let temp of [].constructor(rowSize)" class="width-5em height-7em padding-05em flex-center">
+    </app-card-slot>
+    <div class="width-6em"></div>
+    <app-graveyard class="width-5em height-7em padding-05em flex-center" [player]="player"></app-graveyard>
   </div>
   <div class="flex height-8em">
+    <div class="width-6em"></div>
+    <div class="width-6em"></div>
     <app-card-slot [player]="player" [rowType]="rowTypes[1]"
-                   *ngFor="let temp of [].constructor(rowSize)" class="app-card-slot width-5em height-7em padding-05em">
+                   *ngFor="let temp of [].constructor(rowSize)" class="width-5em height-7em padding-05em flex-center">
     </app-card-slot>
-    <div class="width-5em"></div>
-    <app-deck class="width-5em height-7em padding-05em" [player]="player"></app-deck>
+    <div class="width-6em"></div>
+    <app-deck class="width-5em height-7em padding-05em flex-center" [player]="player"></app-deck>
   </div>
   <div class="flex height-8em" *ngIf="order === 1">
-    <app-card-slot [player]="player" [rowType]="rowTypes[0]"
-                   *ngFor="let temp of [].constructor(rowSize)" class="app-card-slot width-5em height-7em padding-05em">
+    <app-card-slot [player]="player" [rowType]="rowTypes[2]" class="width-5em height-7em padding-05em flex-center">
     </app-card-slot>
-    <div class="width-5em"></div>
-    <app-graveyard class="width-5em height-7em padding-05em" [player]="player"></app-graveyard>
+    <div class="width-6em"></div>
+    <app-card-slot [player]="player" [rowType]="rowTypes[0]"
+                   *ngFor="let temp of [].constructor(rowSize)" class="width-5em height-7em padding-05em flex-center">
+    </app-card-slot>
+    <div class="width-6em"></div>
+    <app-graveyard class="width-5em height-7em padding-05em flex-center" [player]="player"></app-graveyard>
   </div>
 </div>

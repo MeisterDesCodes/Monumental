@@ -1,6 +1,5 @@
 import {GamestateType} from "../shared/enums/gamestate-type";
 import {Injectable} from "@angular/core";
-import {GamestateLocationType} from "../shared/enums/gamestate-location-type";
 import {CardLocation} from "../shared/enums/card-location";
 
 @Injectable()

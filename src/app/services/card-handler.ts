@@ -11,6 +11,8 @@ import {GamephaseHandler} from "./gamephase-handler";
 import {GamephaseType} from "../shared/enums/gamephase-type";
 import {PlayerHandler} from "./player-handler";
 import {interval} from "rxjs";
+import {ElementType} from "../shared/enums/element-type";
+import {Archetype} from "../shared/enums/archetype";
 
 @Injectable()
 export class CardHandler {
@@ -32,7 +34,7 @@ export class CardHandler {
               private playerHandler: PlayerHandler) {
   }
 
-  setSelectedCard(card: Card) {
+  setSelectedCard(card: Card | null) {
     this.getSelectedCard() !== card ? this.selectedCard = card : this.selectedCard = null;
   }
 
@@ -103,12 +105,15 @@ export class CardHandler {
     }
   }
 
-  continueOrBreakChain() {
-    if (SP.getCardHandler().chain.length >= 1) {
-      this.chain.pop()!();
-    }
-    else {
-      this.setChainActive(false);
+  continueOrBreakChain(): void {
+    if (!this.gamestateHandler.isValidGamestate([GamestateType.SPECIAL_SUMMON,
+      GamestateType.SPECIAL_PLACE])) {
+      if (SP.getCardHandler().chain.length >= 1) {
+        this.chain.pop()!();
+      }
+      else {
+        this.setChainActive(false);
+      }
     }
   }
 
@@ -118,25 +123,37 @@ export class CardHandler {
     this.gamestateHandler.setGamestate(GamestateType.NORMAL);
   }
 
-  summonCard(card: Card) {
+  summonCard(card: Card): void {
     this.placeOrSummonCard(card);
     card.onSummon();
   }
 
-  placeCard(card: Card) {
+  placeCard(card: Card): void {
     this.placeOrSummonCard(card);
     card.onPlace();
   }
 
-  placeOrSummonCard(card: Card) {
+  specialSummonCard(card: Card): void {
+    this.placeOrSummonCard(card);
+    card.onSpecialSummon();
+  }
+
+  specialPlaceCard(card: Card): void {
+    this.placeOrSummonCard(card);
+    card.onSpecialPlace();
+  }
+
+  placeOrSummonCard(card: Card): void {
     if (card.location === CardLocation.HAND) {
       this.removeCardFromHand(card);
     }
     this.addCardToField(card);
+    this.playerHandler.getFieldCards().forEach(card => card.onCardAddedToField(card));
+    this.setChainActive(false);
   }
 
-  activateCard(card: Card) {
-    if (card.type === CardType.SPELL) {
+  activateCard(card: Card): void {
+    if (card.type === CardType.SPELL && card.location === CardLocation.HAND) {
       this.payElementCosts(card);
       this.sendCardFromHandToGraveyard(card);
     }
@@ -146,14 +163,26 @@ export class CardHandler {
     card.onActivate();
   }
 
-  discardCard(card: Card) {
+  discardCard(card: Card): void {
     this.sendCardFromHandToGraveyard(card);
     card.onDiscard();
   }
 
-  millCard(card: Card) {
+  banishCard(card: Card): void {
+    this.removeCardFromGraveyard(card);
+    card.onBanish();
+  }
+
+  millCard(card: Card): void {
     this.sendCardFromDeckToGraveyard(card);
     card.onMill();
+  }
+
+  destroyCard(card: Card): void {
+    if (card.canBeDestroyed()) {
+      this.sendCardFromFieldToGraveyard(card);
+      card.onDestroy();
+    }
   }
 
   attackUnit(attacker: Card, defender: Card) {
@@ -253,15 +282,21 @@ export class CardHandler {
     this.summonOrPlaceCardOnField(card);
   }
 
+  addCardFromDeckToField(card: Card) {
+    this.removeCardFromDeck(card);
+    card.onRemoveFromDeck();
+    this.summonOrPlaceCardOnField(card);
+  }
+
   summonOrPlaceCardOnField(card: Card): void {
     this.setActiveCard(card);
     if (card.type === CardType.UNIT) {
-      this.gamestateHandler.setGamestate(GamestateType.SUMMON);
-      this.setActiveCardAction(CardAction.SUMMON);
+      this.gamestateHandler.setGamestate(GamestateType.SPECIAL_SUMMON);
+      this.setActiveCardAction(CardAction.SPECIAL_SUMMON);
     }
     else {
-      this.gamestateHandler.setGamestate(GamestateType.PLACE);
-      this.setActiveCardAction(CardAction.PLACE);
+      this.gamestateHandler.setGamestate(GamestateType.SPECIAL_PLACE);
+      this.setActiveCardAction(CardAction.SPECIAL_PLACE);
     }
   }
 
@@ -275,6 +310,18 @@ export class CardHandler {
     this.gamestateHandler.setGamestate(GamestateType.PLACE);
     this.setActiveCard(card);
     this.setActiveCardAction(CardAction.PLACE);
+  }
+
+  showCardSpecialSummonOptions(card: Card) {
+    this.gamestateHandler.setGamestate(GamestateType.SPECIAL_SUMMON);
+    this.setActiveCard(card);
+    this.setActiveCardAction(CardAction.SPECIAL_SUMMON);
+  }
+
+  showCardSpecialPlaceOptions(card: Card) {
+    this.gamestateHandler.setGamestate(GamestateType.SPECIAL_PLACE);
+    this.setActiveCard(card);
+    this.setActiveCardAction(CardAction.SPECIAL_PLACE);
   }
 
   showAttackOptions(card: Card) {
@@ -315,6 +362,16 @@ export class CardHandler {
       this.gamephaseHandler.isValidGamePhase([GamephaseType.MAIN]) && this.canPayElementCosts(card);
   }
 
+  canSpecialSummonCard(card: Card): boolean {
+    return card.location === CardLocation.HAND &&
+      card.canSpecialSummon() && this.gamephaseHandler.isValidGamePhase([GamephaseType.MAIN]);
+  }
+
+  canSpecialPlaceCard(card: Card): boolean {
+    return card.location === CardLocation.HAND &&
+      card.canSpecialPlace() && this.gamephaseHandler.isValidGamePhase([GamephaseType.MAIN]);
+  }
+
   canDiscardCard(card: Card): boolean {
     return card.location === CardLocation.HAND && card.canDiscard() &&
       this.gamephaseHandler.isValidGamePhase([GamephaseType.MAIN]);
@@ -338,6 +395,9 @@ export class CardHandler {
   gainElement(player: Player, element: Element): void {
     let tempElement: Element = this.playerHandler.getElement(player, element.type);
     tempElement ? tempElement.amount += element.amount : player.elementals.push(element);
+    if (element.type === ElementType.WOOD) {
+      this.playerHandler.getFieldCards().forEach(card => card.onWoodGain(element.amount));
+    }
   }
 
   loseElement(player: Player, element: Element): void {
@@ -399,6 +459,14 @@ export class CardHandler {
 
   triggerStandbyPhase(player: Player): void {
     player.field.cards.forEach(card => card.onStandbyPhase());
+  }
+
+  triggerStandbyPhaseForArchetypeAndType(player: Player, archetype: Archetype, cardType: CardType): void {
+    player.field.cards.forEach(card => {
+      if (card.archetype === archetype && card.type === cardType) {
+        card.onStandbyPhase();
+      }
+    });
   }
 
   triggerMainPhase(player: Player): void {

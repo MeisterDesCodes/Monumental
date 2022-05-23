@@ -10,8 +10,6 @@ import {CardHandler} from "./card-handler";
 import {CardAction} from "../shared/enums/card-action";
 import {CardType} from "../shared/enums/card-type";
 import {PlayerHandler} from "./player-handler";
-import {ElementType} from "../shared/enums/element-type";
-import {GamestateLocationType} from "../shared/enums/gamestate-location-type";
 
 @Injectable()
 export class SearchHandler {
@@ -57,6 +55,16 @@ export class SearchHandler {
         this.cardHandler.setActiveSearchCardsAction(cardLocation === CardLocation.GRAVEYARD ?
           CardAction.VIEW_GRAVEYARD : CardAction.VIEW_DECK);
         this.cardHandler.setActiveSearchCards(this.getCards(player, cardLocation));
+        this.cardHandler.setActiveSearchCardsCount(0);
+      });
+  }
+
+  viewActivatableCards(player: Player, cardLocation: CardLocation): void {
+    this.cardHandler.chain.push(
+      () => {
+        this.cardHandler.setActiveSearchCardsAction(CardAction.ACTIVATE);
+        this.cardHandler.setActiveSearchCards(this.getCards(player, cardLocation).filter(
+          card => card.canActivate()));
         this.cardHandler.setActiveSearchCardsCount(0);
       });
   }
@@ -115,7 +123,20 @@ export class SearchHandler {
       () => {
         this.cardHandler.setActiveSearchCardsAction(CardAction.DESTROY);
         this.cardHandler.setActiveSearchCards(
-          this.getCards(player, cardLocation).filter(card => card.type === cardType && card.name !== exclude?.name));
+          this.getCards(player, cardLocation).filter(card => card.type === cardType &&
+            card.name !== exclude?.name));
+        this.cardHandler.setActiveSearchCardsCount(count);
+      });
+  }
+
+  destroyCardsByPlayerAndTypeAndAttack(player: Player, cardLocation: CardLocation, cardType: CardType, attack: number,
+                                       count: number, exclude: Card | null): void {
+    this.cardHandler.chain.push(
+      () => {
+        this.cardHandler.setActiveSearchCardsAction(CardAction.DESTROY);
+        this.cardHandler.setActiveSearchCards(
+          this.getCards(player, cardLocation).filter(card => card.type === cardType &&
+            card.attack <= attack && card.name !== exclude?.name));
         this.cardHandler.setActiveSearchCardsCount(count);
       });
   }
@@ -198,6 +219,30 @@ export class SearchHandler {
       });
   }
 
+  discardCardsByArchetypeAndType(player: Player, cardLocation: CardLocation, archetype: Archetype, cardType: CardType,
+                                 count: number, exclude: Card | null): void {
+    this.cardHandler.chain.push(
+      () => {
+        this.cardHandler.setActiveSearchCardsAction(CardAction.DISCARD);
+        this.cardHandler.setActiveSearchCards(
+          this.getCards(player, cardLocation).filter(card => card.archetype === archetype
+            && card.type === cardType && card.name !== exclude?.name));
+        this.cardHandler.setActiveSearchCardsCount(count);
+      });
+  }
+
+  banishCardsByArchetype(player: Player, cardLocation: CardLocation, archetype: Archetype, count: number,
+              exclude: Card | null): void {
+    this.cardHandler.chain.push(
+      () => {
+        this.cardHandler.setActiveSearchCardsAction(CardAction.BANISH);
+        this.cardHandler.setActiveSearchCards(
+          this.getCards(player, cardLocation).filter(card => card.archetype === archetype &&
+            card.name !== exclude?.name));
+        this.cardHandler.setActiveSearchCardsCount(count);
+      });
+  }
+
   millCardsByArchetype(player: Player, cardLocation: CardLocation, archetype: Archetype, count: number,
                           exclude: Card | null): void {
     this.cardHandler.chain.push(
@@ -210,13 +255,13 @@ export class SearchHandler {
       });
   }
 
-  destroyCardsByPlayerWoodAmount(player: Player, cardLocation: CardLocation, count: number, exclude: Card | null): void {
+  destroyCardsByPlayerWoodAmount(player: Player, cardLocation: CardLocation, amount: number, count: number,
+                                 exclude: Card | null): void {
     this.cardHandler.chain.push(
       () => {
         this.cardHandler.setActiveSearchCardsAction(CardAction.DESTROY);
         this.cardHandler.setActiveSearchCards(
-          this.getCards(player, cardLocation).filter(card => card.remainingHealth <
-            this.playerHandler.getElementAmount(this.playerHandler.getCurrentPlayer(), ElementType.WOOD) &&
+          this.getCards(player, cardLocation).filter(card => card.remainingHealth < amount &&
             card.name !== exclude?.name));
         this.cardHandler.setActiveSearchCardsCount(count)
       });
@@ -267,6 +312,18 @@ export class SearchHandler {
           this.getCards(player, cardLocation).filter(
             card => card.archetype === archetype && card.type === CardType.BUILDING &&
               card.name !== exclude?.name));
+        this.cardHandler.setActiveSearchCardsCount(count);
+      });
+  }
+
+  placeCardsByName(player: Player, cardLocation: CardLocation, name: string, count: number,
+                        exclude: Card | null): void {
+    this.cardHandler.chain.push(
+      () => {
+        this.cardHandler.setActiveSearchCardsAction(CardAction.PLACE);
+        this.cardHandler.setActiveSearchCards(
+          this.getCards(player, cardLocation).filter(
+            card => card.name.toLowerCase().includes(name.toLowerCase()) && card.name !== exclude?.name));
         this.cardHandler.setActiveSearchCardsCount(count);
       });
   }

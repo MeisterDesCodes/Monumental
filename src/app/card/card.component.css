@@ -1,8 +1,6 @@
 .game-card {
   font-size: 0.75em;
   height: 100%;
-  background: url("../../assets/images/backgrounds/card-background.jpg");
-  background-size: cover;
   border: solid #391607 0.25em;
   border-radius: 1em;
   box-shadow: 0 0 1em 0.5em #000;
@@ -19,5 +17,25 @@
 }
 
 .game-card-facedown {
-  background: url("../../assets/images/backgrounds/card-background.jpg");
+  background: url("src/assets/images/backgrounds/card-background.jpg");
+}
+
+.unit-background {
+  background: url("src/assets/images/backgrounds/card-background-unit.jpg");
+  background-size: cover;
+}
+
+.building-background {
+  background: url("src/assets/images/backgrounds/card-background-building.jpg");
+  background-size: cover;
+}
+
+.spell-background {
+  background: url("src/assets/images/backgrounds/card-background-spell.jpg");
+  background-size: cover;
+}
+
+.monument-background {
+  background: url("src/assets/images/backgrounds/card-background-monument.jpg");
+  background-size: cover;
 }

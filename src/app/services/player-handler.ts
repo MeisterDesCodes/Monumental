@@ -55,12 +55,16 @@ export class PlayerHandler {
     return element ? element.amount : 0;
   }
 
-  getUnits(): Card[] {
-    return this.currentPlayer.field.cards.filter(card => card.type === CardType.UNIT);
+  getUnits(player: Player): Card[] {
+    return player.field.cards.filter(card => card.type === CardType.UNIT);
   }
 
-  getOtherUnits(cardToExclude: Card): Card[] {
-    return this.currentPlayer.field.cards.filter(card => card.type === CardType.UNIT && card !== cardToExclude);
+  getOtherUnits(player: Player, cardToExclude: Card): Card[] {
+    return player.field.cards.filter(card => card.type === CardType.UNIT && card !== cardToExclude);
+  }
+
+  getHandCards(): Card[] {
+    return this.currentPlayer.hand.cards;
   }
 
   getFieldCards(): Card[] {

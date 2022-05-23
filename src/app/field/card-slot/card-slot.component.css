@@ -1,13 +1,48 @@
 .game-card-slot {
+  position: relative;
   height: 100%;
+  width: 100%;
 }
 
 .usable {
+  border: 0.1em solid transparent;
   box-shadow: inset 0 0 1em 0.1em green;
+  align-items: center;
+  justify-content: center;
+  display: flex;
 }
 
 .attackable {
-  box-shadow: 0 0 1em 0.1em red;
+  box-shadow: 0 0 1em 0.25em red;
+  border-radius: 0.5em;
+  align-items: center;
+  justify-content: center;
+  display: flex;
+}
+
+.card-animation {
+  border-radius: 0.5em;
+  animation-duration: 2s;
+  animation-iteration-count: infinite;
+}
+
+.card-usable-animation {
+  animation-name: usable-animation;
+}
+
+.card-attackable-animation {
+  animation-name: attackable-animation;
+}
+
+
+.card-animation-delay1 {
+  animation-delay: 0.5s;
+}
+.card-animation-delay2 {
+  animation-delay: 1s;
+}
+.card-animation-delay3 {
+  animation-delay: 1.5s;
 }
 
 .selectable {

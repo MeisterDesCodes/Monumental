@@ -1,13 +1,14 @@
 <app-admin-panel></app-admin-panel>
-<div *ngIf="isValidGamestate()" class="absolute width-100per height-100per background-shadow justify-content flex
-z-index-1"></div>
-<app-search-view *ngIf="isSearchState()" class="absolute top-0 width-100per height-100per z-index-2"></app-search-view>
-<div class="width-100per height-100per flex">
+<div *ngIf="isValidGamestate()" class="absolute width-height-100per background-shadow justify-content flex
+z-index-2"></div>
+<app-search-view *ngIf="isSearchState()" class="absolute top-0 width-height-100per z-index-2
+overflow-hidden"></app-search-view>
+<div class="width-height-100per flex">
   <div class="width-70per height-100per inline-block">
     <app-field [player]="players[1]" [order]="1"></app-field>
     <app-field [player]="players[0]" [order]="0"></app-field>
   </div>
-  <app-detail-view class="width-30per height-100per align-items justify-content flex"></app-detail-view>
+  <app-detail-view class="width-30per height-100per flex"></app-detail-view>
 </div>
 <ng-container *ngFor="let player of players">
   <ng-container *ngIf="player === getCurrentPlayer()">

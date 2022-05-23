@@ -3,6 +3,7 @@ import {Card} from "../shared/card";
 import {CardHandler} from "./card-handler";
 import {PlayerHandler} from "./player-handler";
 import {Archetype} from "../shared/enums/archetype";
+import {Player} from "../shared/player";
 
 @Injectable()
 export class UnitHandler {
@@ -35,8 +36,8 @@ export class UnitHandler {
     card.remainingHealth += healthAmount;
   }
 
-  modifyUnitsStatsByArchetype(attackAmount: number, healthAmount: number, archetype: Archetype): void {
-    this.playerHandler.getUnits().forEach(unit => {
+  modifyUnitsStatsByArchetype(player: Player, attackAmount: number, healthAmount: number, archetype: Archetype): void {
+    this.playerHandler.getUnits(player).forEach(unit => {
       if (unit.archetype === archetype) {
         unit.attack += attackAmount;
         unit.maxHealth += healthAmount;
@@ -45,9 +46,9 @@ export class UnitHandler {
     });
   }
 
-  modifyOtherUnitsStatsByArchetype(attackAmount: number, healthAmount: number, archetype: Archetype,
+  modifyOtherUnitsStatsByArchetype(player: Player, attackAmount: number, healthAmount: number, archetype: Archetype,
                                    cardToExclude: Card): void {
-    this.playerHandler.getOtherUnits(cardToExclude).forEach(unit => {
+    this.playerHandler.getOtherUnits(player, cardToExclude).forEach(unit => {
       if (unit.archetype === archetype) {
         unit.attack += attackAmount;
         unit.maxHealth += healthAmount;

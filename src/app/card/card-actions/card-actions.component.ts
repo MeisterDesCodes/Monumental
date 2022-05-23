@@ -16,13 +16,17 @@ export class CardActionsComponent {
   @Input() card!: Card;
 
   constructor(private gameLogic: CardHandler, private playerHandler: PlayerHandler,
-              private searchHandler: SearchHandler) { }
+              private searchHandler: SearchHandler, private cardHandler: CardHandler) { }
 
   getPerformableActions(): CardAction[] {
     if (this.card) {
       let cardActions: CardAction[] = this.card.cardActions.filter(
         cardAction => this.canPerformAction(cardAction));
       if (this.card.location === CardLocation.GRAVEYARD) {
+        if (this.card.owner.graveyard.cards.some(card => card.canActivate()) &&
+          !cardActions.includes(CardAction.ACTIVATE)) {
+          cardActions.push(CardAction.ACTIVATE);
+        }
         cardActions.push(CardAction.VIEW_GRAVEYARD);
       }
       if (this.card.location === CardLocation.DECK) {
@@ -42,6 +46,10 @@ export class CardActionsComponent {
           return this.gameLogic.canSummonCard(this.card);
         case CardAction.PLACE:
           return this.gameLogic.canPlaceCard(this.card);
+        case CardAction.SPECIAL_SUMMON:
+          return this.gameLogic.canSpecialSummonCard(this.card);
+        case CardAction.SPECIAL_PLACE:
+          return this.gameLogic.canSpecialPlaceCard(this.card);
         case CardAction.DISCARD:
           return this.gameLogic.canDiscardCard(this.card);
         case CardAction.ACTIVATE:
@@ -65,8 +73,19 @@ export class CardActionsComponent {
       case CardAction.PLACE:
         this.gameLogic.showCardPlaceOptions(card);
         break;
+      case CardAction.SPECIAL_SUMMON:
+        this.gameLogic.showCardSpecialSummonOptions(card);
+        break;
+      case CardAction.SPECIAL_PLACE:
+        this.gameLogic.showCardSpecialPlaceOptions(card);
+        break;
       case CardAction.ACTIVATE:
-        this.gameLogic.activateCard(card);
+        if (card.location === CardLocation.GRAVEYARD) {
+          this.searchHandler.viewActivatableCards(card.owner, CardLocation.GRAVEYARD);
+        }
+        else {
+          this.gameLogic.activateCard(card);
+        }
         break;
       case CardAction.DISCARD:
         this.gameLogic.discardCard(card);
@@ -81,5 +100,6 @@ export class CardActionsComponent {
         this.searchHandler.viewCards(card.owner, CardLocation.DECK);
         break;
     }
+    this.cardHandler.setSelectedCard(null);
   }
 }

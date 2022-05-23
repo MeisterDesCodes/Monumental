@@ -1,5 +1,13 @@
 <div class="game-card-slot" (click)="performAction()"
      [ngClass]="{'usable': isUsable(), 'attackable': isAttackable(), 'update': update(),  'slot-border': !card}">
+  <div class="absolute width-height-100per card-animation"
+       [ngClass]="{'card-usable-animation': isUsable(), 'card-attackable-animation': isAttackable()}"></div>
+  <div class="absolute width-height-100per card-animation card-animation-delay1"
+       [ngClass]="{'card-usable-animation': isUsable(), 'card-attackable-animation': isAttackable()}"></div>
+  <div class="absolute width-height-100per card-animation card-animation-delay2"
+       [ngClass]="{'card-usable-animation': isUsable(), 'card-attackable-animation': isAttackable()}"></div>
+  <div class="absolute width-height-100per card-animation card-animation-delay3"
+       [ngClass]="{'card-usable-animation': isUsable(), 'card-attackable-animation': isAttackable()}"></div>
   <app-card (click)="setSelectedCard(card)" class="font-size-0375em" *ngIf="card" [card]="card"
-            [ngClass]="{'selected': card === getSelectedCard()}"></app-card>
+            [ngClass]="{'selected': card === getSelectedCard(), 'width-height-100per': isAttackable()}"></app-card>
 </div>

@@ -7,7 +7,6 @@ import {CardAction} from "../../shared/enums/card-action";
 import {CardType} from "../../shared/enums/card-type";
 import {Player} from "../../shared/player";
 import {PlayerHandler} from "../../services/player-handler";
-import {CardLocation} from "../../shared/enums/card-location";
 
 @Component({
   selector: 'app-card-slot',
@@ -30,9 +29,7 @@ export class CardSlotComponent {
       switch (activeCardAction) {
         case CardAction.SUMMON:
           if (this.canSummonCard()) {
-            if (activeCard.location === CardLocation.HAND) {
-              this.cardHandler.payElementCosts(activeCard);
-            }
+            this.cardHandler.payElementCosts(activeCard);
             this.cardHandler.resetState();
             this.cardHandler.summonCard(activeCard);
             this.setCard(activeCard);
@@ -40,11 +37,23 @@ export class CardSlotComponent {
           break;
         case CardAction.PLACE:
           if (this.canPlaceCard()) {
-            if (activeCard.location === CardLocation.HAND) {
-              this.cardHandler.payElementCosts(activeCard);
-            }
+            this.cardHandler.payElementCosts(activeCard);
             this.cardHandler.resetState();
             this.cardHandler.placeCard(activeCard);
+            this.setCard(activeCard);
+          }
+          break;
+        case CardAction.SPECIAL_SUMMON:
+          if (this.canSummonCard()) {
+            this.cardHandler.resetState();
+            this.cardHandler.specialSummonCard(activeCard);
+            this.setCard(activeCard);
+          }
+          break;
+        case CardAction.SPECIAL_PLACE:
+          if (this.canPlaceCard()) {
+            this.cardHandler.resetState();
+            this.cardHandler.specialPlaceCard(activeCard);
             this.setCard(activeCard);
           }
           break;
@@ -54,6 +63,7 @@ export class CardSlotComponent {
           }
           break;
       }
+      this.cardHandler.setSelectedCard(null);
     }
   }
 
@@ -71,14 +81,14 @@ export class CardSlotComponent {
 
   canSummonCard(): boolean {
     return !this.card && this.cardHandler.getActiveCard()! &&
-      this.gamestateHandler.isValidGamestate([GamestateType.SUMMON]) &&
+      this.gamestateHandler.isValidGamestate([GamestateType.SUMMON, GamestateType.SPECIAL_SUMMON]) &&
       this.playerHandler.getCurrentPlayer() === this.player &&
       this.rowType === this.cardHandler.getActiveCard()!.type;
   }
 
   canPlaceCard(): boolean {
     return !this.card && this.cardHandler.getActiveCard()! &&
-      this.gamestateHandler.isValidGamestate([GamestateType.PLACE]) &&
+      this.gamestateHandler.isValidGamestate([GamestateType.PLACE, GamestateType.SPECIAL_PLACE]) &&
       this.playerHandler.getCurrentPlayer() === this.player &&
       this.rowType === this.cardHandler.getActiveCard()!.type;
   }

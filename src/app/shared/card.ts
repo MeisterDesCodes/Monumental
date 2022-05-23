@@ -13,7 +13,6 @@ import {CardLocation} from "./enums/card-location";
 import {UnitHandler} from "../services/unit-handler";
 import {CardSlotComponent} from "../field/card-slot/card-slot.component";
 import {SearchHandler} from "../services/search-handler";
-import {GamestateType} from "./enums/gamestate-type";
 import {SearchViewComponent} from "../search-view/search-view.component";
 
 export class SP {
@@ -73,7 +72,7 @@ export class Card {
   }
 
   canActivate(): boolean {
-    return this.location === CardLocation.HAND;
+    return this.type === CardType.SPELL ? this.location === CardLocation.HAND : this.location === CardLocation.FIELD;
   }
   canSummon(): boolean {
     return true;
@@ -81,15 +80,33 @@ export class Card {
   canPlace(): boolean {
     return true;
   }
+  canSpecialSummon(): boolean {
+    return false;
+  }
+  canSpecialPlace(): boolean {
+    return false;
+  }
   canDiscard(): boolean {
+    return true;
+  }
+
+  canBeDestroyed(): boolean {
     return true;
   }
 
   onActivate(): void {}
   onDiscard(): void {}
+  onBanish(): void {}
   onSummon(): void {}
   onPlace(): void {}
-  onMill(): void{}
+  onSpecialSummon(): void {
+    this.onSummon();
+  }
+  onSpecialPlace(): void {
+    this.onPlace();
+  }
+  onMill(): void {}
+  onDestroy(): void {}
 
   onRemoveFromField(): void {}
   onRemoveFromHand(): void {}
@@ -117,7 +134,8 @@ export class Card {
   onStandbyPhase(): void {}
   onMainPhase(): void {}
 
-  onWoodGain(): void {}
+  onWoodGain(amount: number): void {}
+  onCardAddedToField(card: Card): void {}
 
   setAttack(amount: number): void {
     this.originalAttack = amount;
@@ -132,6 +150,10 @@ export class Card {
   setAttacks(amount: number): void {
     this.maxAttacks = amount;
     this.remainingAttacks = amount
+  }
+
+  setImagePath(): void {
+    this.imagePath = this.name.split(' ').join('-').toLowerCase();
   }
 }
 
@@ -157,7 +179,6 @@ export class Sawmill extends Card {
     this.description = 'Place: Gain 1 ' + ElementType.WOOD + '.\n\n Standby: Gain 1 ' + ElementType.WOOD;
     this.type = CardType.BUILDING;
     this.cardActions = [CardAction.PLACE];
-    this.imagePath = 'sawmill';
 
     this.onPlace = function() {
       SP.getCardHandler().gainElement(this.owner, {type: ElementType.WOOD, amount: 1});
@@ -180,7 +201,6 @@ export class LogManufacturingPlant extends Card {
     this.type = CardType.BUILDING;
     this.cardActions = [CardAction.PLACE];
     this.elementCosts = [{type: ElementType.WOOD, amount: 4}];
-    this.imagePath = 'log-manufacturing-plant';
 
     this.onPlace = function() {
       SP.getCardHandler().gainElement(this.owner, {type: ElementType.WOOD, amount: 3});
@@ -204,7 +224,6 @@ export class TreetopSociety extends Card {
     this.type = CardType.BUILDING;
     this.cardActions = [CardAction.PLACE];
     this.elementCosts = [{type: ElementType.WOOD, amount: 2}, {type: ElementType.DAWN, amount: 2}];
-    this.imagePath = 'treetop-society';
 
     this.onPlace = function(): void {
       SP.getCardHandler().drawCards(this.owner, 1);
@@ -230,11 +249,10 @@ export class LostParadise extends Card {
     this.cardActions = [CardAction.PLACE, CardAction.ACTIVATE];
     this.elementCosts = [{type: ElementType.WOOD, amount: 2}, {type: ElementType.DAWN, amount: 2},
       {type: ElementType.OCEAN, amount: 2}];
-    this.imagePath = 'lost-paradise';
 
     this.canActivate = function(): boolean {
       return this.location === CardLocation.FIELD &&
-        SP.getPlayerHandler().getElementAmount(this.owner, ElementType.WOOD)! >= 2;
+        SP.getPlayerHandler().getElementAmount(this.owner, ElementType.WOOD) >= 2;
     }
     this.onActivate = function(): void {
       SP.getCardHandler().loseElement(this.owner, {type: ElementType.WOOD, amount: 2});
@@ -259,7 +277,6 @@ export class OvergrownTemple extends Card {
     this.type = CardType.BUILDING;
     this.cardActions = [CardAction.PLACE];
     this.elementCosts = [{type: ElementType.WOOD, amount: 3}, {type: ElementType.SHADOW, amount: 2}];
-    this.imagePath = 'overgrown-temple';
 
     this.onPlace = function(): void {
       SP.getSearchHandler().drawCardsByArchetypeAndType(
@@ -269,8 +286,37 @@ export class OvergrownTemple extends Card {
     this.onStandbyPhase = function(): void {
       if (this.location === CardLocation.FIELD) {
         SP.getCardHandler().gainElement(this.owner, {type: ElementType.WOOD, amount: 1});
-        SP.getCardHandler().gainElement(this.owner, {type: ElementType.DAWN, amount: 1});
+        SP.getCardHandler().gainElement(this.owner, {type: ElementType.SHADOW, amount: 1});
       }
+    }
+  }
+}
+
+export class JungleShrine extends Card {
+
+  constructor() {
+    super();
+
+    this.name = 'Jungle Shrine';
+    this.description = 'Mill: Place this card.\n\n Everytime you a ' + Archetype.WOODLANDS + ' card is added to ' +
+      'your side of the field, gain 1 ' + ElementType.WOOD + '. Removed: Send 1 ' + Archetype.WOODLANDS + ' card ' +
+      'from your deck to the graveyard.';
+    this.type = CardType.BUILDING;
+    this.cardActions = [CardAction.PLACE];
+    this.elementCosts = [{type: ElementType.WOOD, amount: 3}, {type: ElementType.DAWN, amount: 1}];
+
+    this.onMill = function(): void {
+      SP.getCardHandler().setActiveSearchCardsAction(CardAction.PLACE);
+      SP.getGamestateHandler().setGamestateLocation(CardLocation.GRAVEYARD);
+      SP.getSearchViewComponent().selectCard(this);
+    }
+    this.onCardAddedToField = function(card: Card): void {
+      if (card.archetype === Archetype.WOODLANDS) {
+        SP.getCardHandler().gainElement(this.owner, {type: ElementType.WOOD, amount: 1});
+      }
+    }
+    this.onRemoveFromField = function(): void {
+      SP.getSearchHandler().millCardsByArchetype(this.owner, CardLocation.DECK, Archetype.WOODLANDS, 1, this);
     }
   }
 }
@@ -285,8 +331,7 @@ export class SpiritTree extends Card {
       'Removed: Add 1 ' + Archetype.WOODLANDS + ' "Spirit" cards from your deck to your hand';
     this.type = CardType.BUILDING;
     this.cardActions = [CardAction.PLACE];
-    this.elementCosts = [{type: ElementType.WOOD, amount: 1},{type: ElementType.DAWN, amount: 1}];
-    this.imagePath = 'spirit-tree';
+    this.elementCosts = [{type: ElementType.WOOD, amount: 2},{type: ElementType.DAWN, amount: 1}];
 
     this.onPlace = function(): void {
       SP.getSearchHandler().drawCardsByArchetypeAndName(this.owner, CardLocation.DECK, Archetype.WOODLANDS,
@@ -305,21 +350,29 @@ export class GardenOfHope extends Card {
     super();
 
     this.name = 'Garden of Hope';
-    this.description = 'Place: Discard 1 card. Gain 2 ' + ElementType.DAWN + '\n\n' +
-      'Standby: Gain 1 ' + ElementType.WOOD + ' and 1 ' + ElementType.DAWN + '.';
+    this.description = 'Place: Banish 1 ' + Archetype.WOODLANDS + ' card from your graveyard. ' +
+      'Gain 2 ' + ElementType.DAWN + '.\n\n' +
+      'Standby: Gain 1 ' + ElementType.WOOD + ' and 1 ' + ElementType.DAWN + '.\n\n' +
+      'Removed: Gain 2 ' + ElementType.WOOD + '.';
     this.type = CardType.BUILDING;
     this.cardActions = [CardAction.PLACE];
-    this.elementCosts = [{type: ElementType.WOOD, amount: 1}];
-    this.imagePath = 'garden-of-hope';
+    this.elementCosts = [{type: ElementType.WOOD, amount: 1}, {type: ElementType.OCEAN, amount: 1}];
 
+    this.canPlace = function(): boolean {
+      return this.owner.graveyard.cards.some(card => card.archetype === Archetype.WOODLANDS);
+    }
     this.onPlace = function(): void {
-      SP.getSearchHandler().discardCards(this.owner, CardLocation.HAND, 1, null);
+      SP.getSearchHandler().banishCardsByArchetype(this.owner, CardLocation.GRAVEYARD, Archetype.WOODLANDS, 1,
+        null);
       SP.getCardHandler().gainElement(this.owner, {type: ElementType.DAWN, amount: 2});
     }
     this.onStandbyPhase = function(): void {
       if (this.location === CardLocation.FIELD) {
         SP.getCardHandler().gainElement(this.owner, {type: ElementType.WOOD, amount: 1});
         SP.getCardHandler().gainElement(this.owner, {type: ElementType.DAWN, amount: 1});
+      }
+      this.onRemoveFromField = function(): void {
+        SP.getCardHandler().gainElement(this.owner, {type: ElementType.WOOD, amount: 2});
       }
     }
   }
@@ -331,16 +384,18 @@ export class Wetlands extends Card {
     super();
 
     this.name = 'Wetlands';
-    this.description = 'Place: Discard 1 card.\n\n' +
+    this.description = 'Place: Discard 1 card. Gain 2 ' + ElementType.OCEAN + '.\n\n' +
       'Standby: Gain 1 ' + ElementType.WOOD + ' and 1 ' + ElementType.OCEAN + '.';
     this.type = CardType.BUILDING;
     this.cardActions = [CardAction.PLACE];
-    this.imagePath = 'wetlands';
 
+    this.canPlace = function(): boolean {
+      return this.owner.hand.cards.length >= 1;
+    }
     this.onPlace = function(): void {
       SP.getSearchHandler().discardCards(this.owner, CardLocation.HAND, 1, null);
+      SP.getCardHandler().gainElement(this.owner, {type: ElementType.OCEAN, amount: 2});
     }
-
     this.onStandbyPhase = function(): void {
       if (this.location === CardLocation.FIELD) {
         SP.getCardHandler().gainElement(this.owner, {type: ElementType.WOOD, amount: 1});
@@ -357,16 +412,15 @@ export class VerdantSanctuary extends Card {
 
     this.name = 'Verdant Sanctuary';
     this.description = 'Every time ' + ElementType.WOOD + ' is gained, all ' + Archetype.WOODLANDS + ' units gain ' +
-      '1 attack and health.';
+      'attack and health equal to the gained amount.';
     this.type = CardType.MONUMENT;
     this.cardActions = [CardAction.PLACE];
     this.elementCosts = [{type: ElementType.WOOD, amount: 4}, {type: ElementType.OCEAN, amount: 2},
       {type: ElementType.DAWN, amount: 2}];
-    this.imagePath = 'verdant-sanctuary';
 
-    this.onWoodGain = function(): void {
+    this.onWoodGain = function(amount: number): void {
       if (this.location === CardLocation.FIELD) {
-        SP.getUnitHandler().modifyUnitsStatsByArchetype(1, 1, Archetype.WOODLANDS);
+        SP.getUnitHandler().modifyUnitsStatsByArchetype(this.owner, amount, amount, Archetype.WOODLANDS);
       }
     }
   }
@@ -381,12 +435,8 @@ export class Terraduct extends Card {
     this.description = 'Activate: Add 1 ' + Archetype.WOODLANDS + ' card from your deck to your hand.';
     this.type = CardType.MONUMENT;
     this.cardActions = [CardAction.PLACE, CardAction.ACTIVATE];
-    this.elementCosts = [{type: ElementType.WOOD, amount: 8}, {type: ElementType.OCEAN, amount: 4}];
-    this.imagePath = 'terraduct';
+    this.elementCosts = [{type: ElementType.WOOD, amount: 6}, {type: ElementType.OCEAN, amount: 4}];
 
-    this.canActivate = function(): boolean {
-      return this.location === CardLocation.FIELD;
-    }
     this.onActivate = function(): void {
       SP.getSearchHandler().drawCardsByArchetype(this.owner, CardLocation.DECK, Archetype.WOODLANDS, 1, this);
     }
@@ -403,7 +453,6 @@ export class StormValley extends Card {
     this.type = CardType.BUILDING;
     this.archetype = Archetype.NONE;
     this.cardActions = [CardAction.PLACE];
-    this.imagePath = 'storm-valley';
 
     this.onStandbyPhase = function(): void {
       if (this.location === CardLocation.FIELD) {
@@ -415,7 +464,7 @@ export class StormValley extends Card {
   }
 }
 
-export class Scout extends Card {
+export class WoodlandsScout extends Card {
 
   constructor() {
     super();
@@ -423,17 +472,16 @@ export class Scout extends Card {
     this.setAttack(3);
     this.setHealth(5);
 
-    this.name = 'Scout';
-    this.description = 'Summon: Gain 1 ' + ElementType.WOOD + '.\n\n Removed: Gain ' + ElementType.WOOD + '.';
+    this.name = 'Woodlands Scout';
+    this.description = 'Summon: Gain 1 ' + ElementType.WOOD + '.\n\n Removed: Gain 1 ' + ElementType.WOOD + '.';
     this.type = CardType.UNIT;
     this.cardActions = [CardAction.ATTACK, CardAction.SUMMON];
-    this.imagePath = 'scout';
 
     this.onSummon = function(): void {
       SP.getCardHandler().gainElement(this.owner, {type: ElementType.WOOD, amount: 1});
     }
     this.onRemoveFromField = function(): void {
-      SP.getCardHandler().drawCards(this.owner, 1);
+      SP.getCardHandler().gainElement(this.owner, {type: ElementType.WOOD, amount: 1});
     }
   }
 }
@@ -447,19 +495,26 @@ export class SpiritWolf extends Card {
     this.setHealth(5);
 
     this.name = 'Spirit Wolf';
-    this.description = 'Discard: Gain 2 ' + ElementType.WOOD;
+    this.description = 'Discard: Gain 2 ' + ElementType.WOOD + '.\n\n Graveyard: Banish this card to ' +
+      'gain 1 ' + ElementType.WOOD + '.';
     this.type = CardType.UNIT;
-    this.cardActions = [CardAction.ATTACK, CardAction.SUMMON, CardAction.DISCARD];
+    this.cardActions = [CardAction.ATTACK, CardAction.SUMMON, CardAction.DISCARD, CardAction.ACTIVATE];
     this.elementCosts = [{type: ElementType.WOOD, amount: 1}];
-    this.imagePath = 'spirit-wolf';
 
     this.onDiscard = function(): void {
       SP.getCardHandler().gainElement(this.owner, {type: ElementType.WOOD, amount: 2});
     }
+    this.canActivate = function(): boolean {
+      return this.location === CardLocation.GRAVEYARD;
+    }
+    this.onActivate = function(): void {
+      SP.getCardHandler().gainElement(this.owner, {type: ElementType.WOOD, amount: 1});
+      SP.getCardHandler().removeCardFromGraveyard(this);
+    }
   }
 }
 
-export class SpiritCrow extends Card {
+export class SpiritCrows extends Card {
 
   constructor() {
     super();
@@ -467,16 +522,15 @@ export class SpiritCrow extends Card {
     this.setAttack(3);
     this.setHealth(4);
 
-    this.name = 'Spirit Crow';
-    this.description = 'Summon: Add 2 "Spirit Crow" from your Graveyard to your hand.\n\n' +
+    this.name = 'Spirit Crows';
+    this.description = 'Summon: Add 2 "' + this.name + '" from your Graveyard to your hand.\n\n' +
       'Discard: Gain 2 ' + ElementType.SHADOW;
     this.type = CardType.UNIT;
     this.cardActions = [CardAction.ATTACK, CardAction.SUMMON, CardAction.DISCARD];
     this.elementCosts = [{type: ElementType.STORM, amount: 1}, {type: ElementType.SHADOW, amount: 1}];
-    this.imagePath = 'spirit-crow';
 
     this.onSummon = function(): void {
-      SP.getSearchHandler().drawCardsByName(this.owner, CardLocation.GRAVEYARD, 'Spirit Crow', 2,
+      SP.getSearchHandler().drawCardsByName(this.owner, CardLocation.GRAVEYARD, this.name, 2,
         null);
     }
     this.onDiscard = function(): void {
@@ -497,7 +551,6 @@ export class ElderwoodDryad extends Card {
     this.description = 'Discard: Send 1 ' + Archetype.WOODLANDS + ' card from your deck to the graveyard.';
     this.type = CardType.UNIT;
     this.cardActions = [CardAction.ATTACK, CardAction.SUMMON, CardAction.DISCARD];
-    this.imagePath = 'elderwood-dryad';
 
     this.onDiscard = function(): void {
       SP.getSearchHandler().millCardsByArchetype(this.owner, CardLocation.DECK, Archetype.WOODLANDS, 1, this);
@@ -517,11 +570,11 @@ export class ElderwoodStag extends Card {
     this.description = 'Discard: Summon 1 ' + Archetype.WOODLANDS + ' unit with 15 or less attack from your hand.';
     this.type = CardType.UNIT;
     this.cardActions = [CardAction.ATTACK, CardAction.SUMMON, CardAction.DISCARD];
-    this.imagePath = 'elderwood-stag';
 
     this.canDiscard = function (): boolean {
       return this.location === CardLocation.HAND && this.owner.hand.cards.some(
-        card => card !== this && card.archetype === Archetype.WOODLANDS && card.type === CardType.UNIT);
+        card => card !== this && card.archetype === Archetype.WOODLANDS && card.type === CardType.UNIT &&
+          card.attack <= 15);
     }
     this.onDiscard = function(): void {
       SP.getSearchHandler().summonCardsByArchetypeAndAttack(this.owner, CardLocation.HAND, Archetype.WOODLANDS,
@@ -539,11 +592,14 @@ export class SpiritDeer extends Card {
     this.setHealth(5);
 
     this.name = 'Spirit Deer';
-    this.description = 'Discard: Gain 1 ' + ElementType.DAWN + ' and 1 ' + ElementType.OCEAN + '.';
+    this.description = 'Summon: Place 1  "Spirit Tree" from your hand.\n\n' +
+      'Discard: Gain 1 ' + ElementType.DAWN + ' and 1 ' + ElementType.OCEAN + '.';
     this.type = CardType.UNIT;
     this.cardActions = [CardAction.ATTACK, CardAction.SUMMON, CardAction.DISCARD];
-    this.imagePath = 'spirit-deer';
 
+    this.onSummon = function(): void {
+      SP.getSearchHandler().placeCardsByName(this.owner, CardLocation.HAND, 'Spirit Tree', 1, null);
+    }
     this.onDiscard = function(): void {
       SP.getCardHandler().gainElement(this.owner, {type: ElementType.DAWN, amount: 1});
       SP.getCardHandler().gainElement(this.owner, {type: ElementType.OCEAN, amount: 1});
@@ -564,7 +620,6 @@ export class SpiritDragon extends Card {
     this.type = CardType.UNIT;
     this.cardActions = [CardAction.ATTACK, CardAction.SUMMON, CardAction.DISCARD];
     this.elementCosts = [{type: ElementType.WOOD, amount: 2}, {type: ElementType.STORM, amount: 2}];
-    this.imagePath = 'spirit-dragon';
 
     this.onDiscard = function(): void {
       SP.getCardHandler().gainElement(this.owner, {type: ElementType.STORM, amount: 2});
@@ -588,7 +643,6 @@ export class BlightedTreant extends Card {
     this.type = CardType.UNIT;
     this.cardActions = [CardAction.ATTACK, CardAction.SUMMON];
     this.elementCosts = [{type: ElementType.WOOD, amount: 3}, {type: ElementType.SHADOW, amount: 3}];
-    this.imagePath = 'blighted-treant';
 
     this.onStandbyPhase = function(): void {
       SP.getUnitHandler().healUnit(this, 7);
@@ -601,19 +655,44 @@ export class WoodlandsApexPredator extends Card {
   constructor() {
     super();
 
-    this.setAttack(23);
-    this.setHealth(12);
+    this.setAttack(21);
+    this.setHealth(11);
 
     this.name = 'Woodlands Apex Predator';
     this.description = 'Kill: Add 1 ' + Archetype.WOODLANDS + ' card from your deck to your hand.';
     this.type = CardType.UNIT;
     this.cardActions = [CardAction.ATTACK, CardAction.SUMMON];
-    this.elementCosts = [{type: ElementType.WOOD, amount: 5}, {type: ElementType.SHADOW, amount: 2}];
-    this.imagePath = 'woodlands-apex-predator';
+    this.elementCosts = [{type: ElementType.WOOD, amount: 4}, {type: ElementType.SHADOW, amount: 2}];
 
     this.onKill = function(): void {
       SP.getSearchHandler().drawCardsByArchetype(this.owner, CardLocation.DECK, Archetype.WOODLANDS, 1,
         null);
+    }
+  }
+}
+
+export class WoodlandsWitch extends Card {
+
+  constructor() {
+    super();
+
+    this.setAttack(8);
+    this.setHealth(11);
+
+    this.name = 'Woodlands Witch';
+    this.description = 'Summon: Destroy 1 enemy unit with 10 or less attack on the field.\n\n' +
+      'Removed: Add 1 ' + Archetype.WOODLANDS + ' spell from your graveyard to your hand';
+    this.type = CardType.UNIT;
+    this.cardActions = [CardAction.ATTACK, CardAction.SUMMON];
+    this.elementCosts = [{type: ElementType.WOOD, amount: 1}, {type: ElementType.SHADOW, amount: 2}];
+
+    this.onSummon = function(): void {
+      SP.getSearchHandler().destroyCardsByPlayerAndTypeAndAttack(SP.getPlayerHandler().getEnemyPlayer(),
+        CardLocation.FIELD, CardType.UNIT, 10, 1, null);
+    }
+    this.onRemoveFromField = function(): void {
+      SP.getSearchHandler().drawCardsByArchetypeAndType(this.owner, CardLocation.GRAVEYARD, Archetype.WOODLANDS,
+        CardType.SPELL, 1, null);
     }
   }
 }
@@ -632,10 +711,10 @@ export class ElderwoodProphet extends Card {
     this.type = CardType.UNIT;
     this.cardActions = [CardAction.ATTACK, CardAction.SUMMON, CardAction.ACTIVATE];
     this.elementCosts = [{type: ElementType.WOOD, amount: 1}];
-    this.imagePath = 'elderwood-prophet';
 
     this.canActivate = function(): boolean {
-      return this.location === CardLocation.FIELD && this.owner.hand.cards.length >= 1;
+      return this.location === CardLocation.FIELD &&
+        this.owner.hand.cards.some(card => card.archetype === Archetype.WOODLANDS);
     }
     this.onActivate = function(): void {
       SP.getCardHandler().drawCards(this.owner, 1);
@@ -660,10 +739,10 @@ export class ElderwoodTreant extends Card {
     this.type = CardType.UNIT;
     this.cardActions = [CardAction.ATTACK, CardAction.SUMMON, CardAction.ACTIVATE];
     this.elementCosts = [{type: ElementType.WOOD, amount: 4},{type: ElementType.DAWN, amount: 4}];
-    this.imagePath = 'elderwood-treant';
 
     this.onMill = function(): void {
       SP.getCardHandler().setActiveSearchCardsAction(CardAction.SUMMON);
+      SP.getGamestateHandler().setGamestateLocation(CardLocation.GRAVEYARD);
       SP.getSearchViewComponent().selectCard(this);
     }
     this.onStandbyPhase = function(): void {
@@ -689,14 +768,16 @@ export class WoodlandsHuntress extends Card {
     this.setHealth(7);
 
     this.name = 'Woodlands Huntress';
-    this.description = 'Summon: Deal 4 damage to all enemy units.';
+    this.description = 'Summon: Deal 4 damage to all enemy units.\n\n Kill: Deal 2 damage to all enemy units.';
     this.type = CardType.UNIT;
     this.cardActions = [CardAction.ATTACK, CardAction.SUMMON];
     this.elementCosts = [{type: ElementType.WOOD, amount: 2}, {type: ElementType.FIRE, amount: 1}];
-    this.imagePath = 'woodlands-huntress';
 
     this.onSummon = function(): void {
       SP.getUnitHandler().damageAllEnemyUnits(this, 4);
+    }
+    this.onKill = function(): void {
+      SP.getUnitHandler().damageAllEnemyUnits(this, 2);
     }
   }
 }
@@ -714,7 +795,6 @@ export class WoodlandsScavenger extends Card {
     this.type = CardType.UNIT;
     this.cardActions = [CardAction.ATTACK, CardAction.SUMMON];
     this.elementCosts = [{type: ElementType.WOOD, amount: 2}];
-    this.imagePath = 'woodlands-scavenger';
 
     this.onSummon = function(): void {
       SP.getSearchHandler().drawCardsByArchetypeAndType(this.owner, CardLocation.DECK, Archetype.WOODLANDS,
@@ -731,14 +811,13 @@ export class WoodlandsElven extends Card {
   constructor() {
     super();
 
-    this.setAttack(6);
-    this.setHealth(4);
+    this.setAttack(7);
+    this.setHealth(3);
 
     this.name = 'Woodlands Elven';
     this.description = 'Kill: Draw 1 Card';
     this.type = CardType.UNIT;
     this.cardActions = [CardAction.ATTACK, CardAction.SUMMON];
-    this.imagePath = 'woodlands-elven';
 
     this.onKill = function () {
       SP.getCardHandler().drawCards(this.owner, 1);
@@ -755,15 +834,15 @@ export class WoodlandsExile extends Card {
     this.setHealth(10);
 
     this.name = 'Woodlands Exile';
-    this.description = 'Activate: Destroy 1 of your cards. Add 1 ' + Archetype.WOODLANDS + ' spell from your deck ' +
-      'to your hand. Increase this cards attack by 3.';
+    this.description = 'Hand: If you control another ' + Archetype.WOODLANDS + ' unit, you can special summon ' +
+      'this card from your hand.\n\n Activate: Destroy 1 of your cards. Add 1 ' +
+      Archetype.WOODLANDS + ' spell from your deck to your hand. Increase this cards attack by 3.';
     this.type = CardType.UNIT;
-    this.cardActions = [CardAction.ATTACK, CardAction.SUMMON, CardAction.ACTIVATE];
+    this.cardActions = [CardAction.ATTACK, CardAction.SUMMON, CardAction.SPECIAL_SUMMON, CardAction.ACTIVATE];
     this.elementCosts = [{type: ElementType.WOOD, amount: 1}, {type: ElementType.FIRE, amount: 1}];
-    this.imagePath = 'woodlands-exile';
 
-    this.canActivate = function(): boolean {
-      return this.location === CardLocation.FIELD;
+    this.canSpecialSummon = function(): boolean {
+      return SP.getPlayerHandler().getUnits(this.owner).some(card => card.archetype === Archetype.WOODLANDS);
     }
     this.onActivate = function(): void {
       SP.getSearchHandler().drawCardsByArchetypeAndType(SP.getPlayerHandler().getCurrentPlayer(),
@@ -780,19 +859,28 @@ export class ThicketSpawn extends Card {
   constructor() {
     super();
 
-    this.setAttack(15);
-    this.setHealth(10);
+    this.setAttack(14);
+    this.setHealth(12);
 
     this.name = 'Thicket Spawn';
-    this.description = 'Summon: Destroy 1 card on the field.\n\n Discard: Gain 3 ' + ElementType.WOOD + '.';
+    this.description = 'Hand: You can special summon this card if you destroy 1 ' + Archetype.WOODLANDS + ' unit ' +
+      'on your side of the field.\n\n Summon: Destroy 1 card on the field.\n\n' +
+      'Discard: Gain 3 ' + ElementType.WOOD + '.';
     this.type = CardType.UNIT;
-    this.cardActions = [CardAction.ATTACK, CardAction.SUMMON];
-    this.elementCosts = [{type: ElementType.WOOD, amount: 5}, {type: ElementType.SHADOW, amount: 1}];
-    this.imagePath = 'thicket-spawn';
+    this.cardActions = [CardAction.ATTACK, CardAction.SUMMON, CardAction.SPECIAL_SUMMON];
+    this.elementCosts = [{type: ElementType.WOOD, amount: 3}, {type: ElementType.SHADOW, amount: 1}];
 
+    this.canSpecialSummon = function(): boolean {
+      return SP.getPlayerHandler().getUnits(this.owner).filter(
+        card => card.archetype === Archetype.WOODLANDS).length >= 1;
+    }
+    this.onSpecialSummon = function(): void {
+      this.onSummon();
+      SP.getSearchHandler().destroyCardsByPlayerAndTypeAndArchetype(this.owner, CardLocation.FIELD, CardType.UNIT,
+        Archetype.WOODLANDS, 1, this);
+    }
     this.onSummon = function(): void {
-      SP.getSearchHandler().destroyCards(SP.getPlayerHandler().getCurrentPlayer(), CardLocation.FIELD, 1,
-        null);
+      SP.getSearchHandler().destroyCards(this.owner, CardLocation.FIELD, 1, null);
     }
     this.onDiscard = function(): void {
       SP.getCardHandler().gainElement(this.owner, {type: ElementType.WOOD, amount: 3});
@@ -812,7 +900,6 @@ export class SummonedSaplings extends Card {
     this.description = 'Discard: Draw 1 card.';
     this.type = CardType.UNIT;
     this.cardActions = [CardAction.ATTACK, CardAction.SUMMON];
-    this.imagePath = 'summoned-saplings';
 
     this.onDiscard = function(): void {
       SP.getCardHandler().drawCards(this.owner, 1);
@@ -825,32 +912,83 @@ export class JungleWyrm extends Card {
   constructor() {
     super();
 
-    this.setAttack(33);
-    this.setHealth(29);
+    this.setAttack(22);
+    this.setHealth(23);
 
     this.name = 'Jungle Wyrm';
-    this.description = 'Summon: Destroy 3 ' + Archetype.WOODLANDS + ' units on your side of the field.\n\n' +
-      'Activate: Discard 1 card. Destroy 1 card on the field.';
+    this.description = 'Hand: You can special summon this card if you destroy 2 ' + Archetype.WOODLANDS + ' units ' +
+      'on your side of the field.\n\n' +
+      'Activate: Discard 1 ' + Archetype.WOODLANDS + ' unit. Destroy 1 card on the field.\n\n' +
+      'Removed: Summon 1 ' + Archetype.WOODLANDS + ' unit with 15 or less health from your graveyard.';
     this.type = CardType.UNIT;
-    this.cardActions = [CardAction.ATTACK, CardAction.SUMMON, CardAction.ACTIVATE];
-    this.elementCosts = [{type: ElementType.WOOD, amount: 7}, {type: ElementType.STORM, amount: 3}];
-    this.imagePath = 'jungle-wyrm';
+    this.cardActions = [CardAction.ATTACK, CardAction.SUMMON, CardAction.SPECIAL_SUMMON, CardAction.ACTIVATE];
+    this.elementCosts = [{type: ElementType.WOOD, amount: 5}, {type: ElementType.STORM, amount: 3}];
 
-    this.canSummon = function(): boolean {
-      return SP.getPlayerHandler().getUnits().length >= 3;
+    this.canSpecialSummon = function(): boolean {
+      return SP.getPlayerHandler().getUnits(this.owner).filter(
+        card => card.archetype === Archetype.WOODLANDS).length >= 2;
     }
-    this.onSummon = function(): void {
+    this.onSpecialSummon = function(): void {
       SP.getSearchHandler().destroyCardsByPlayerAndTypeAndArchetype(this.owner, CardLocation.FIELD, CardType.UNIT,
-        Archetype.WOODLANDS, 3, this);
+        Archetype.WOODLANDS, 2, this);
     }
     this.canActivate = function(): boolean {
-      return this.location === CardLocation.FIELD && this.owner.hand.cards.length >= 1;
+      return this.location === CardLocation.FIELD && this.owner.hand.cards.some(
+        card => card.archetype === Archetype.WOODLANDS && card.type === CardType.UNIT);
     }
     this.onActivate = function(): void {
-      SP.getSearchHandler().destroyCards(SP.getPlayerHandler().getCurrentPlayer(), CardLocation.FIELD, 1,
-        null);
-      SP.getSearchHandler().discardCards(SP.getPlayerHandler().getCurrentPlayer(), CardLocation.HAND, 1,
-        null);
+      SP.getSearchHandler().destroyCards(this.owner, CardLocation.FIELD, 1, null);
+      SP.getSearchHandler().discardCardsByArchetypeAndType(this.owner, CardLocation.HAND, Archetype.WOODLANDS,
+        CardType.UNIT, 1, null);
+    }
+    this.onRemoveFromField = function(): void {
+      SP.getSearchHandler().summonCardsByArchetypeAndHealth(this.owner, CardLocation.GRAVEYARD, Archetype.WOODLANDS,
+        15, 1, null);
+    }
+  }
+}
+
+export class Bioterror extends Card {
+
+  constructor() {
+    super();
+
+    this.setAttack(13);
+    this.setHealth(38);
+
+    this.name = 'Bioterror';
+    this.description = 'When this card would be destroyed, you can destroy one other ' + Archetype.WOODLANDS + ' unit instead.\n\n' +
+      'Summon: Double your ' + ElementType.WOOD + '.\n\n' +
+      'Activate: Pay 4 Wood. Add 1 ' + Archetype.WOODLANDS + ' unit from your graveyard to your hand.';
+
+    this.type = CardType.UNIT;
+    this.cardActions = [CardAction.ATTACK, CardAction.SUMMON, CardAction.ACTIVATE];
+    this.elementCosts = [{type: ElementType.WOOD, amount: 8}, {type: ElementType.STORM, amount: 2},
+      {type: ElementType.SHADOW, amount: 2}];
+
+    this.canBeDestroyed = function(): boolean {
+      if (SP.getPlayerHandler().getOtherUnits(this.owner, this).length >= 1) {
+        SP.getSearchHandler().destroyCardsByPlayerAndTypeAndArchetype(this.owner, CardLocation.FIELD, CardType.UNIT,
+          Archetype.WOODLANDS, 1, this);
+        return false;
+      }
+      else {
+        return true;
+      }
+    }
+    this.onSummon = function(): void {
+      SP.getCardHandler().gainElement(this.owner, {type: ElementType.WOOD, amount:
+          SP.getPlayerHandler().getElementAmount(this.owner, ElementType.WOOD)});
+    }
+    this.canActivate = function(): boolean {
+      return this.location === CardLocation.FIELD &&
+        SP.getPlayerHandler().getElementAmount(this.owner, ElementType.WOOD) >= 4 && this.owner.graveyard.cards.some(
+        card => card.archetype === Archetype.WOODLANDS && card.type === CardType.UNIT);
+    }
+    this.onActivate = function(): void {
+      SP.getCardHandler().loseElement(this.owner, {type: ElementType.WOOD, amount: 4});
+      SP.getSearchHandler().drawCardsByArchetypeAndType(this.owner, CardLocation.GRAVEYARD, Archetype.WOODLANDS,
+        CardType.UNIT, 1, this);
     }
   }
 }
@@ -861,14 +999,13 @@ export class GreenLair extends Card {
     super();
 
     this.name = 'Green Lair';
-    this.description = 'Add 1 ' + Archetype.WOODLANDS + ' card from your deck to your hand';
+    this.description = 'Add 1 "' + Archetype.WOODLANDS + '" card from your deck to your hand';
     this.type = CardType.SPELL;
     this.cardActions = [CardAction.ACTIVATE];
     this.elementCosts = [{type: ElementType.WOOD, amount: 1}];
-    this.imagePath = 'green-lair';
 
     this.onActivate = function(): void {
-      SP.getSearchHandler().drawCardsByArchetype(this.owner, CardLocation.DECK, Archetype.WOODLANDS, 1, this);
+      SP.getSearchHandler().drawCardsByName(this.owner, CardLocation.DECK, Archetype.WOODLANDS, 1, this);
     }
   }
 }
@@ -883,7 +1020,6 @@ export class Terraform extends Card {
     this.type = CardType.SPELL;
     this.cardActions = [CardAction.ACTIVATE];
     this.elementCosts = [{type: ElementType.WOOD, amount: 1}];
-    this.imagePath = 'terraform';
 
     this.onActivate = function(): void {
       SP.getSearchHandler().drawCardsByArchetypeAndType(this.owner, CardLocation.DECK, Archetype.WOODLANDS,
@@ -902,14 +1038,12 @@ export class ForestFire extends Card {
     this.type = CardType.SPELL;
     this.cardActions = [CardAction.ACTIVATE];
     this.elementCosts = [{type: ElementType.WOOD, amount: 1}];
-    this.imagePath = 'forest-fire';
 
     this.canActivate = function(): boolean {
       return this.location === CardLocation.HAND && this.owner.remainingHealth > 4;
     }
     this.onActivate = function(): void {
       SP.getPlayerHandler().damagePlayer(this.owner, 4);
-      SP.getCardHandler().loseElement(this.owner, {type: ElementType.WOOD, amount: 1});
       SP.getCardHandler().gainElement(this.owner, {type: ElementType.FIRE, amount: 4});
     }
   }
@@ -924,8 +1058,10 @@ export class Craftsmanship extends Card {
     this.description = 'Discard 1 card. Place 1 ' + Archetype.WOODLANDS + ' building from your deck.';
     this.type = CardType.SPELL;
     this.cardActions = [CardAction.ACTIVATE];
-    this.imagePath = 'craftsmanship';
 
+    this.canActivate = function(): boolean {
+      return this.location === CardLocation.HAND && SP.getPlayerHandler().getHandCards().length >= 1;
+    }
     this.onActivate = function(): void {
       SP.getSearchHandler().placeCardsByArchetype(this.owner, CardLocation.DECK, Archetype.WOODLANDS, 1,
         null);
@@ -941,11 +1077,10 @@ export class ANewBeginning extends Card {
     super();
 
     this.name = 'A new Beginning';
-    this.description = 'Destroy 1 of your ' + Archetype.WOODLANDS + ' cards. Take 3 damage. Draw 1 card. Gain 2 ' +
+    this.description = 'Destroy 1 of your ' + Archetype.WOODLANDS + ' cards. Take 3 damage. Draw 1 card. Gain 3 ' +
       ElementType.WOOD + '.';
     this.type = CardType.SPELL;
     this.cardActions = [CardAction.ACTIVATE];
-    this.imagePath = 'a-new-beginning';
 
     this.canActivate = function(): boolean {
       return this.location === CardLocation.HAND && SP.getPlayerHandler().getFieldCards().length >= 1 &&
@@ -956,7 +1091,25 @@ export class ANewBeginning extends Card {
         SP.getPlayerHandler().getCurrentPlayer(), CardLocation.FIELD, Archetype.WOODLANDS, 1, null);
       SP.getPlayerHandler().damagePlayer(this.owner, 3);
       SP.getCardHandler().drawCards(SP.getPlayerHandler().getCurrentPlayer(), 1);
-      SP.getCardHandler().gainElement(this.owner, {type: ElementType.WOOD, amount: 2});
+      SP.getCardHandler().gainElement(this.owner, {type: ElementType.WOOD, amount: 3});
+    }
+  }
+}
+
+export class TimeShiftingJungle extends Card {
+
+  constructor() {
+    super();
+
+    this.name = 'Time Shifting Jungle';
+    this.description = 'Gain 1 ' + ElementType.WOOD + ' and trigger the standby phase of all your ' +
+      Archetype.WOODLANDS + ' buildings.';
+    this.type = CardType.SPELL;
+    this.cardActions = [CardAction.ACTIVATE];
+
+    this.onActivate = function(): void {
+      SP.getCardHandler().triggerStandbyPhaseForArchetypeAndType(this.owner, Archetype.WOODLANDS, CardType.BUILDING);
+      SP.getCardHandler().gainElement(this.owner, {type: ElementType.WOOD, amount: 1});
     }
   }
 }
@@ -967,18 +1120,17 @@ export class PrimalWrath extends Card {
     super();
 
     this.name = 'Primal Wrath';
-    this.description = 'All ' + Archetype.WOODLANDS + ' units gain 5 Attack and 3 health.';
+    this.description = 'All ' + Archetype.WOODLANDS + ' units gain 5 attack and 3 health.';
     this.type = CardType.SPELL;
     this.cardActions = [CardAction.ACTIVATE];
     this.elementCosts = [{type: ElementType.WOOD, amount: 2}];
-    this.imagePath = 'primal-wrath';
 
     this.canActivate = function (): boolean {
-      return SP.getPlayerHandler().getUnits()
+      return SP.getPlayerHandler().getUnits(this.owner)
         .some(unit => unit.archetype === Archetype.WOODLANDS) && this.location === CardLocation.HAND;
     }
     this.onActivate = function(): void {
-      SP.getUnitHandler().modifyUnitsStatsByArchetype(5, 3, Archetype.WOODLANDS);
+      SP.getUnitHandler().modifyUnitsStatsByArchetype(this.owner, 5, 3, Archetype.WOODLANDS);
     }
   }
 }
@@ -989,21 +1141,20 @@ export class FleshToSoil extends Card {
     super();
 
     this.name = 'Flesh To Soil';
-    this.description = 'Destroy 1 enemy unit with health less than your ' + ElementType.WOOD + '.';
+    this.description = 'Destroy 1 enemy unit with health less than your ' + ElementType.WOOD + ' times 2.';
     this.type = CardType.SPELL;
     this.archetype = Archetype.NONE;
     this.cardActions = [CardAction.ACTIVATE];
     this.elementCosts = [{type: ElementType.SHADOW, amount: 1}];
-    this.imagePath = 'flesh-to-soil';
 
     this.canActivate = function (): boolean {
       return SP.getPlayerHandler().getEnemyUnits().some(unit => {
-        return  SP.getPlayerHandler().getElementAmount(this.owner, ElementType.WOOD) > unit.remainingHealth;
+        return  SP.getPlayerHandler().getElementAmount(this.owner, ElementType.WOOD) * 2 > unit.remainingHealth;
       }) && this.location === CardLocation.HAND;
     }
     this.onActivate = function(): void {
       SP.getSearchHandler().destroyCardsByPlayerWoodAmount(SP.getPlayerHandler().getEnemyPlayer(), CardLocation.FIELD,
-        1, null);
+        SP.getPlayerHandler().getElementAmount(this.owner, ElementType.WOOD) * 2, 1, null);
       SP.getCardHandler().gainElement(this.owner, {type: ElementType.WOOD, amount: 2});
     }
   }
@@ -1019,10 +1170,9 @@ export class ShadowSurge extends Card {
     this.type = CardType.SPELL
     this.archetype = Archetype.NONE;
     this.cardActions = [CardAction.ACTIVATE];
-    this.imagePath = 'shadow-surge';
 
     this.canActivate = function(): boolean {
-      return this.location === CardLocation.HAND && SP.getPlayerHandler().getUnits().length >= 1;
+      return this.location === CardLocation.HAND && SP.getPlayerHandler().getUnits(this.owner).length >= 1;
     }
     this.onActivate = function(): void {
       SP.getSearchHandler().destroyCardsByPlayerAndType(this.owner, CardLocation.FIELD, CardType.UNIT, 1,
@@ -1045,7 +1195,6 @@ export class JungleRebornRitual extends Card {
     this.type = CardType.SPELL;
     this.cardActions = [CardAction.ACTIVATE];
     this.elementCosts = [{type: ElementType.WOOD, amount: 2}];
-    this.imagePath = 'jungle-reborn-ritual';
 
     this.canActivate = function (): boolean {
       return this.location === CardLocation.HAND && this.owner.graveyard.cards.some(
@@ -1053,7 +1202,7 @@ export class JungleRebornRitual extends Card {
     }
     this.onActivate = function(): void {
       SP.getSearchHandler().summonCardsByArchetypeAndHealth(this.owner, CardLocation.GRAVEYARD, Archetype.WOODLANDS,
-        15, 1, null);
+        10, 1, null);
     }
   }
 }
@@ -1064,15 +1213,19 @@ export class OpenWilderness extends Card {
     super();
 
     this.name = 'Open Wilderness';
-    this.description = 'Draw 3 cards. Discard 1 card';
+    this.description = ' Discard 1 ' + Archetype.WOODLANDS + ' card. Draw 3 cards.';
     this.type = CardType.SPELL;
     this.cardActions = [CardAction.ACTIVATE];
-    this.elementCosts = [{type: ElementType.WOOD, amount: 3}];
-    this.imagePath = 'open-wilderness';
+    this.elementCosts = [{type: ElementType.WOOD, amount: 1}, {type: ElementType.OCEAN, amount: 1}];
 
+    this.canActivate = function(): boolean {
+      return this.location === CardLocation.HAND &&
+        this.owner.hand.cards.some(card => card.archetype === Archetype.WOODLANDS);
+    }
     this.onActivate = function(): void {
-      SP.getSearchHandler().discardCards(this.owner, CardLocation.HAND, 1, null);
       SP.getCardHandler().drawCards(this.owner, 3);
+      SP.getSearchHandler().discardCardsByArchetype(this.owner, CardLocation.HAND, Archetype.WOODLANDS, 1,
+        null);
     }
   }
 }
@@ -1082,15 +1235,14 @@ export class RootGolem extends Card {
   constructor() {
     super();
 
-    this.setAttack(11);
-    this.setHealth(18);
+    this.setAttack(7);
+    this.setHealth(22);
 
     this.name = 'Root Golem';
     this.description = 'Combat: Takes half damage from being attacked.';
     this.type = CardType.UNIT;
     this.cardActions = [CardAction.ATTACK, CardAction.SUMMON];
-    this.elementCosts = [{type: ElementType.WOOD, amount: 5}];
-    this.imagePath = 'root-golem';
+    this.elementCosts = [{type: ElementType.WOOD, amount: 4}];
 
     this.defenseModifierOnBeingAttacked = function(): number {
       return 0.5;
@@ -1103,16 +1255,15 @@ export class BearBrute extends Card {
   constructor() {
     super();
 
-    this.setAttack(16);
-    this.setHealth(13);
+    this.setAttack(15);
+    this.setHealth(12);
     this.setAttacks(2);
 
     this.name = 'Bear Brute';
     this.description = 'Combat: Can attack 2 times.';
     this.type = CardType.UNIT;
     this.cardActions = [CardAction.ATTACK, CardAction.SUMMON];
-    this.elementCosts = [{type: ElementType.WOOD, amount: 4}, {type: ElementType.FIRE, amount: 1}];
-    this.imagePath = 'bear-brute';
+    this.elementCosts = [{type: ElementType.WOOD, amount: 3}, {type: ElementType.FIRE, amount: 1}];
   }
 }
 
@@ -1125,15 +1276,15 @@ export class TribeLeader extends Card {
     this.setHealth(8);
 
     this.name = 'Tribe Leader';
-    this.description = 'Summon: All other ' + Archetype.WOODLANDS + ' units gain 3 attack and health.\n\n' +
+    this.description = 'Summon: All other ' + Archetype.WOODLANDS + ' units gain 4 attack and health.\n\n' +
       'Removed: Add 1 ' + Archetype.WOODLANDS + ' unit from your deck to your hand.';
     this.type = CardType.UNIT;
     this.cardActions = [CardAction.ATTACK, CardAction.SUMMON];
     this.elementCosts = [{type: ElementType.WOOD, amount: 2}, {type: ElementType.DAWN, amount: 1}];
-    this.imagePath = 'tribe-leader';
 
     this.onSummon = function (): void {
-      SP.getUnitHandler().modifyOtherUnitsStatsByArchetype(3, 3, Archetype.WOODLANDS, this);
+      SP.getUnitHandler().modifyOtherUnitsStatsByArchetype(this.owner, 4, 4,
+        Archetype.WOODLANDS, this);
     }
     this.onRemoveFromField = function (): void {
       SP.getSearchHandler().drawCardsByArchetypeAndType(this.owner, CardLocation.DECK, Archetype.WOODLANDS,
@@ -1156,7 +1307,6 @@ export class DawnDrake extends Card {
     this.cardActions = [CardAction.ATTACK, CardAction.SUMMON];
     this.elementCosts = [{type: ElementType.WOOD, amount: 3}, {type: ElementType.STORM, amount: 1},
       {type: ElementType.DAWN, amount: 2}];
-    this.imagePath = 'dawn-drake';
 
     this.onStandbyPhase = function (): void {
       SP.getUnitHandler().modifyUnitStats(this, 4, 4);

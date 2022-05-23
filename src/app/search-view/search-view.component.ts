@@ -1,4 +1,4 @@
-import {Component} from '@angular/core';
+import {Component, ViewChild} from '@angular/core';
 import {Card} from "../shared/card";
 import {GamestateHandler} from "../services/gamestate-handler";
 import {GamestateType} from "../shared/enums/gamestate-type";
@@ -14,6 +14,8 @@ import {CardLocation} from "../shared/enums/card-location";
   styleUrls: ['./search-view.component.css']
 })
 export class SearchViewComponent {
+
+  @ViewChild('input') input!: HTMLInputElement;
 
   allSearchCards: Card[] = [];
   inputValue: string = '';
@@ -42,7 +44,7 @@ export class SearchViewComponent {
         }
         break;
       case CardAction.DESTROY:
-        this.cardHandler.sendCardFromFieldToGraveyard(card);
+        this.cardHandler.destroyCard(card);
         break;
       case CardAction.DISCARD:
         this.cardHandler.discardCard(card);
@@ -56,12 +58,19 @@ export class SearchViewComponent {
           case CardLocation.HAND:
             this.cardHandler.addCardFromHandToField(card);
             break;
-          default:
-            this.cardHandler.addCardFromGraveyardToField(card);
+          case CardLocation.DECK:
+            this.cardHandler.addCardFromDeckToField(card);
+            break;
         }
         break;
       case CardAction.MILL:
         this.cardHandler.millCard(card);
+        break;
+      case CardAction.ACTIVATE:
+        this.cardHandler.activateCard(card);
+        break;
+      case CardAction.BANISH:
+        this.cardHandler.banishCard(card);
         break;
       default:
         break;
@@ -85,16 +94,17 @@ export class SearchViewComponent {
 
   resetState(): void {
     switch(this.cardHandler.getActiveCardAction()) {
-      case CardAction.SUMMON:
-        this.gamestateHandler.setGamestate(GamestateType.SUMMON);
+      case CardAction.SPECIAL_SUMMON:
+        this.gamestateHandler.setGamestate(GamestateType.SPECIAL_SUMMON);
         break;
-      case CardAction.PLACE:
-        this.gamestateHandler.setGamestate(GamestateType.PLACE);
+      case CardAction.SPECIAL_PLACE:
+        this.gamestateHandler.setGamestate(GamestateType.SPECIAL_PLACE);
         break;
       default:
         this.gamestateHandler.setGamestate(GamestateType.NORMAL);
         break;
     }
+    this.cardHandler.setSelectedCard(null);
     this.cardHandler.setActiveSearchCards([]);
     this.cardHandler.setActiveSearchCardsAction(null);
     this.cardHandler.setActiveSearchCardsCount(0);
@@ -106,19 +116,40 @@ export class SearchViewComponent {
     return this.inputValue === '' && (this.cardHandler.getActiveSearchCards()!.length === 0 ||
       this.cardHandler.getActiveSearchCardsAction() === CardAction.DRAW ||
       this.cardHandler.getActiveSearchCardsAction() === CardAction.VIEW_GRAVEYARD ||
-      this.cardHandler.getActiveSearchCardsAction() === CardAction.VIEW_DECK);
+      this.cardHandler.getActiveSearchCardsAction() === CardAction.VIEW_DECK ||
+      this.cardHandler.getActiveSearchCardsAction() === CardAction.ACTIVATE);
   }
 
   getDescription(): string {
-    let description: string = this.cardHandler.getActiveSearchCardsAction()!
-      if (this.cardHandler.getActiveSearchCardsCount() !== 0) {
-        description += ' ' + this.cardHandler.getActiveSearchCardsCount();
-      }
-    description += ' card';
-    if (this.cardHandler.getActiveSearchCardsCount() !== 1) {
-      description += 's';
+    let count: number = this.cardHandler.getActiveSearchCardsCount();
+    let countCardsString: string = count === 0 ? ' cards' : count === 1 ? count + ' card' : count + ' cards';
+    let cardLocationString: string = this.gamestateHandler.getGamestateLocation().toLowerCase();
+    let cardAction: CardAction = this.cardHandler.getActiveSearchCardsAction()!;
+    switch (cardAction) {
+      case CardAction.DRAW:
+        return 'Add ' + countCardsString + ' from your ' + cardLocationString + ' to your hand';
+      case CardAction.DESTROY:
+        return 'Destroy ' + countCardsString + ' on the ' + cardLocationString;
+      case CardAction.DISCARD:
+        return 'Send ' + countCardsString + ' from the ' + cardLocationString + ' to the graveyard';
+      case CardAction.MILL:
+        return 'Send ' + countCardsString + ' from the deck to the graveyard';
+      case CardAction.VIEW_GRAVEYARD:
+        return 'Graveyard View';
+      case CardAction.VIEW_DECK:
+        return 'Deck View';
+      case CardAction.SUMMON:
+      case CardAction.PLACE:
+      case CardAction.SPECIAL_SUMMON:
+      case CardAction.SPECIAL_PLACE:
+        return cardAction + ' ' + countCardsString + ' from your ' + cardLocationString + ' to the field';
+      case CardAction.ACTIVATE:
+        return 'Activate a card from the graveyard';
+      case CardAction.BANISH:
+        return 'Banish ' + countCardsString + ' from your graveyard';
+      default:
+        return '';
     }
-    return description;
   }
 
   filterCards(text: string): void {
@@ -128,6 +159,12 @@ export class SearchViewComponent {
     }
     this.cardHandler.setActiveSearchCards(this.allSearchCards.filter(
       card => card.name.toLowerCase().includes(text.toLowerCase()) ||
-        card.description.toLowerCase().includes(text.toLowerCase())));
+        card.description.toLowerCase().includes(text.toLowerCase()) ||
+        card.archetype.toLowerCase().includes(text.toLowerCase())));
+  }
+
+  resetInput(): void {
+    this.inputValue = '';
+    this.filterCards(this.inputValue);
   }
 }
